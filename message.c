@@ -2,7 +2,7 @@
 #include "messages.h"
 #include "window.h"
 
-void initMsgQueue()
+void msgqueueinit()
 {
 	for(int i = 0; i < MAX_QUEUE_LENGTH; i++)
 	{
@@ -10,7 +10,7 @@ void initMsgQueue()
 	}
 }
 
-void initMsgTable()
+void msgtableinit()
 {
 	for(int i = 0; i < MAX_PROCESS_NUMBER; i++)
 	{
@@ -95,7 +95,7 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 }
 
 //系统调用，获得一个进程当前需要处理的msg，并将其从MsgTable和MsgQueue中删除
-void getmsg(int pid, struct Msg* ptr)
+void getMsg(int pid, struct Msg* ptr)
 {
 	for(int i = 0; i < MAX_PROCESS_NUMBER; i++)
 	{
