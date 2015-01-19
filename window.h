@@ -21,10 +21,19 @@ typedef struct Window
 
 typedef Window* WindowLink;//用队列中的先后顺序表示窗口堆叠的次序
 
+extern WindowLink window_list;
+
+//initialize the window list
 void initWindowList();
+
+//get the current activated window
 WindowLink getActivated();
+
+void setActivated(int window_id);
 WindowLink allocWindow(int left_x, int left_y, int right_x, int right_y, int pid);
 int releaseWindow(int window_id);
+int inClientRect(WindowLink pWindow, int position_x, int position_y);
+int getClickedPid(int position_x, int position_y);
 
 int sys_createWindow(void);
 int sys_destoryWindow(void);

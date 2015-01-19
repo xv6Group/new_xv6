@@ -100,7 +100,7 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_getmsg(void);
 extern int sys_createWindow(void);
-extern int sys_destoryWindow(void);
+extern int sys_destroyWindow(void);
 extern int sys_updateWindow(void);
 
 static int (*syscalls[])(void) = {
