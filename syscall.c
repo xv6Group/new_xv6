@@ -99,6 +99,9 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_getmsg(void);
+extern int sys_createWindow(void);
+extern int sys_destoryWindow(void);
+extern int sys_updateWindow(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -123,6 +126,9 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_getmsg]  sys_getmsg,
+[SYS_createWindow] sys_createWindow,
+[SYS_destoryWindow] sys_destoryWindow,
+[SYS_updateWindow] sys_updateWindow,
 };
 
 void

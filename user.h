@@ -25,6 +25,9 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 void getmsg(int, struct Msg*);
+int createWindow(char*, int, int, int, int);
+int destoryWindow(int);
+int updateWindow(int, short**);
 
 // ulib.c
 int stat(char*, struct stat*);
