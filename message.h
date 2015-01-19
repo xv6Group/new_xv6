@@ -6,6 +6,7 @@
 #define MSG_DOUBLECLICK 4
 #define MSG_DRAG 5
 #define MSG_KEYDOWN 6
+#define MSG_UPDATE 7
 #define MAX_PROCESS_NUMBER 20
 #define MAX_QUEUE_LENGTH 100
 
@@ -56,3 +57,4 @@ struct MsgTableEntry MsgTable[MAX_PROCESS_NUMBER];
 extern void createMsg(int msg_type, int pos_x, int pos_y, char key);
 extern void msgqueueinit();
 extern void msgtableinit();
+extern void createUpdateMsg(int pid);

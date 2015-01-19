@@ -94,6 +94,14 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	dispatch(pid, msg_index);
 }
 
+void createUpdateMsg(int pid)
+{
+	int msg_index = requireMsg(MSG_UPDATE, 0, 0, " ");
+	if (msg_index == -1) return;
+	
+	dispatch(pid, msg_index);
+}
+
 //系统调用，获得一个进程当前需要处理的msg，并将其从MsgTable和MsgQueue中删除
 void getMsg(int pid, struct Msg* ptr)
 {
