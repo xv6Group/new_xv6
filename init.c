@@ -10,7 +10,7 @@ char *argv[] = { "sh", 0 };
 int
 main(void)
 {
-  int pid, wpid;
+  int pid, wpid, desktop_pid, desktop_wpid;
 
   if(open("console", O_RDWR) < 0){
     mknod("console", 1, 1);
@@ -20,6 +20,19 @@ main(void)
   dup(0);  // stderr
 
   for(;;){
+    // 桌面进程
+    printf(1, "init desktop: starting desktop\n");
+    desktop_pid = fork();
+    if (desktop_pid < 0) {
+      printf(1, "init desktop: init desktop failed\n");
+      exit();
+    }
+    if (desktop_pid == 0) {
+      exec("desktop", argv);
+      printf(1, "init desktop: exec desktop failed\n");
+      exit();
+    }
+
     printf(1, "init: starting sh\n");
     pid = fork();
     if(pid < 0){
@@ -31,6 +44,10 @@ main(void)
       printf(1, "init: exec sh failed\n");
       exit();
     }
+
+    // while((desktop_wpid=wait()) >= 0 && desktop_wpid != desktop_pid)
+    //   printf(1, "desktop finished!\n");
+
     while((wpid=wait()) >= 0 && wpid != pid)
       printf(1, "zombie!\n");
   }
