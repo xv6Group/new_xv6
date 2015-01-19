@@ -47,7 +47,7 @@ WindowLink allocWindow(int left_x, int left_y, int right_x, int right_y, int pid
 int releaseWindow(int window_id)
 {
 	WindowLink p;
-	for (p = list_head; p != NULL; p = p->next_window)
+	for (p = list_head; p != 0; p = p->next_window)
 	{
 		if (p->window_id == window_id)
 		{
@@ -74,3 +74,36 @@ int inClientRect(WindowLink pWindow, int position_x, int position_y)
 		(pWindow->window_postion).right_y >= y ? 1 : 0;
 }
 
+void setActivated(int window_id)
+{
+	WindowLink p = list_head;
+	while (p != 0 && p->window_id != window_id) p = p->next_window;
+	if (p == 0) return;
+
+	if (p->prior_window != 0) 
+		p->prior_window->next_window = p->next_window;
+	else
+		list_head = p->next_window;
+	if (p->next_window != 0) 
+		p->next_window->prior_window = p->prior_window;
+	else
+		list_tail = p->prior_window;
+
+	if (list_head == 0) list_head = p;
+	p->prior_window = list_tail;
+	list_tail = p;
+	p->next_window = 0;
+}
+
+int getClickedPid(int position_x, int position_y)
+{
+	WindowLink p = getWindowByPoint(position_x, position_y);
+	return p == 0 ? -1 : p->pid;
+}
+
+WindowLink getWindowByPoint(int position_x, int position_y)
+{
+	WindowLink p = list_tail;
+	while (p != 0 && !inClientRect(p, position_x, position_y)) p = p->prior_window;
+	return p;
+}

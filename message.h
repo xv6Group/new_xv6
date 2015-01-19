@@ -54,4 +54,3 @@ typedef struct MsgTableEntry
 struct MsgTableEntry MsgTable[MAX_PROCESS_NUMBER];
 
 extern void createMsg(int msg_type, int pos_x, int pos_y, char key);
-extern void getMsg(int pid, struct Msg* ptr);
