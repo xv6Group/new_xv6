@@ -88,7 +88,7 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	}
 	else//鼠标事件
 	{
-		//按照窗口从上到下的顺序检查鼠标事件应该加入哪个进程的消息队列
+		pid = getClickedPid(pos_x, pos_y);
 	}
 
 	dispatch(pid, msg_index);
