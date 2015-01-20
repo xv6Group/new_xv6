@@ -10,12 +10,27 @@ struct Context context;
 int main(int argc, char *argv[])
 {
     //int pid, wpid;
+    int winid;
+    struct Msg msg;
+    msg.msg_type = MSG_NONE;
 
-    init_context(&context, 800, 600); 
-    fill_rect(context, 0, 0, context.width, context.height, 2016);
-    int windowId;
-    int result;
-    int running = 1;
+    winid = init_context(&context, 800, 600); 
+    fill_rect(context, 0, 0, context.width, context.height, 0xffff);
+    puts_str(context, "desktop: welcome", 0x0, 0, 0);
+
+    while(1)
+    {
+        getMsg(&msg);
+        switch(msg.msg_type)
+        {
+            case MSG_UPDATE:
+                updateWindow(winid, context.addr);
+                break;
+            default:
+                break;
+        }
+    }
+
     /*
     printf(1, "init shell: starting shell\n");
     pid = fork();
@@ -32,23 +47,25 @@ int main(int argc, char *argv[])
     while((wpid=wait()) >= 0 && wpid != pid)
         printf(1, "shell finished!\n");
     */
-    windowId = createWindow(0, 0, 800, 600);
-    printf(0, "windowId: %d\n", windowId);
-    while(running)
+
+    /* printf(0, "windowId: %d\n", windowId);
+    while(1)
     {
         Msg msg;
+        int result;
         msg.msg_type = MSG_NONE;
         getMsg(&msg);
         switch(msg.msg_type)
         {
             case MSG_UPDATE:
-                result = updateWindow(windowId, context.addr);
+                result = updateWindow(winid, context.addr);
                 printf(0, "updateResult: %d\n", result);
                 break;
             default:
                 break;
         }
-    }
-    free_context(&context);
+    }*/
+
+    free_context(&context, winid);
     exit();
 }
