@@ -38,6 +38,7 @@ WindowLink allocWindow(int left_x, int left_y, int right_x, int right_y, int pid
 			(p->window_position).right_x = right_x;
 			(p->window_position).right_y = right_y;
 			if (list_head == 0) list_head = p;
+			if (list_tail != 0) list_tail->next_window = p;
 			p->prior_window = list_tail;
 			list_tail = p;
 			p->next_window = 0;
@@ -73,6 +74,7 @@ int releaseWindow(int window_id)
 
 int inClientRect(WindowLink pWindow, int position_x, int position_y)
 {
+	//cprintf("WindowID: %d, x: %d, y: %d\n", pWindow->window_id, position_x, position_y);
 	return (pWindow->window_position).left_x <= position_x &&
 		(pWindow->window_position).right_x >= position_x &&
 		(pWindow->window_position).left_y <= position_y &&
@@ -95,6 +97,7 @@ void setActivated(int window_id)
 		list_tail = p->prior_window;
 
 	if (list_head == 0) list_head = p;
+	if (list_tail != 0) list_tail->next_window = p;
 	p->prior_window = list_tail;
 	list_tail = p;
 	p->next_window = 0;
@@ -110,7 +113,12 @@ int getClickedPid(int position_x, int position_y)
 WindowLink getWindowById(int window_id)
 {
 	WindowLink p = list_head;
-	while (p != 0 && p->window_id != window_id) p = p->next_window;
+	while (p != 0 && p->window_id != window_id) 
+	{
+		cprintf("now: %d, target: %d\n", p->window_id, window_id);
+		cprintf("next: %d\n", p->next_window);
+		p = p->next_window;
+	}
 	return p;
 }
 
@@ -128,12 +136,13 @@ void drawWindow(WindowLink pWindow, color16* context)
 	int y1 = (pWindow->window_position).left_y;
 	int x2 = (pWindow->window_position).right_x;
 	int y2 = (pWindow->window_position).right_y;
+	cprintf("window_id: %d, x1: %d, y1: %d, x2: %d, y2: %d\n", pWindow->window_id, x1, y1, x2, y2);
 	for (i = x1; i < x2; i++)
 		for (j = y1; j < y2; j++)
 		{	
 			WindowLink qWindow = list_tail;
-			while (qWindow != pWindow && !inClientRect(qWindow, i, j)) qWindow = qWindow->prior_window;
-			vesa_array[i * SCREEN_HEIGHT + j] = qWindow == pWindow ? context[(i - x1) * (y2 - y1) + j - y1] : vesa_array[i * SCREEN_HEIGHT + j];
+			while (qWindow != pWindow && inClientRect(qWindow, i, j)) qWindow = qWindow->prior_window;
+			vesa_array[j * SCREEN_WIDTH + i] = qWindow == pWindow ? context[(j - y1) * (x2 - x1) + i - x1] : vesa_array[j * SCREEN_WIDTH + i];
 			//vesa_array[i*SCREEN_HEIGHT + j] = 2016;
 		}
 }
