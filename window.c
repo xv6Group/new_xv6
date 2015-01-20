@@ -29,7 +29,7 @@ WindowLink allocWindow(int left_x, int left_y, int right_x, int right_y, int pid
 	WindowLink p;
 	for (p = window_array; p < &window_array[MAXWINDOW]; p++)
 	{
-		if (p->window_id < 0)
+		if (p->window_id <= 0)
 		{
 			p->window_id = next_window_id++;
 			p->pid = pid;
@@ -129,9 +129,10 @@ void drawWindow(WindowLink pWindow, color16* context)
 	for (i = x1; i < x2; i++)
 		for (j = y1; j < y2; j++)
 		{	
-			WindowLink qWindow = list_tail;
-			while (qWindow != pWindow && !inClientRect(qWindow, i, j)) qWindow = qWindow->prior_window;
-			vesa_array[i * SCREEN_HEIGHT + j] = qWindow == pWindow ? context[(i - x1) * (y2 - y1) + j - y1] : vesa_array[i * SCREEN_HEIGHT + j];
+			//WindowLink qWindow = list_tail;
+			//while (qWindow != pWindow && !inClientRect(qWindow, i, j)) qWindow = qWindow->prior_window;
+			//vesa_array[i * SCREEN_HEIGHT + j] = qWindow == pWindow ? context[(i - x1) * (y2 - y1) + j - y1] : vesa_array[i * SCREEN_HEIGHT + j];
+			vesa_array[i*SCREEN_HEIGHT + j] = 2016;
 		}
 }
 
