@@ -38,6 +38,7 @@ main(void)
   msgqueueinit();
   msgtableinit();
   windowlistinit();
+  mouseinit();
   if(!ismp)
     timerinit();   // uniprocessor timer
   startothers();   // start other processors

@@ -41,6 +41,8 @@ WindowLink allocWindow(int left_x, int left_y, int right_x, int right_y, int pid
 			p->prior_window = list_tail;
 			list_tail = p;
 			p->next_window = 0;
+			createUpdateMsg(p->pid);
+			cprintf("UpdateMsg created for process: %d\n", p->pid);
 			return p;
 		}
 	}
@@ -129,10 +131,10 @@ void drawWindow(WindowLink pWindow, color16* context)
 	for (i = x1; i < x2; i++)
 		for (j = y1; j < y2; j++)
 		{	
-			//WindowLink qWindow = list_tail;
-			//while (qWindow != pWindow && !inClientRect(qWindow, i, j)) qWindow = qWindow->prior_window;
-			//vesa_array[i * SCREEN_HEIGHT + j] = qWindow == pWindow ? context[(i - x1) * (y2 - y1) + j - y1] : vesa_array[i * SCREEN_HEIGHT + j];
-			vesa_array[i*SCREEN_HEIGHT + j] = 2016;
+			WindowLink qWindow = list_tail;
+			while (qWindow != pWindow && !inClientRect(qWindow, i, j)) qWindow = qWindow->prior_window;
+			vesa_array[i * SCREEN_HEIGHT + j] = qWindow == pWindow ? context[(i - x1) * (y2 - y1) + j - y1] : vesa_array[i * SCREEN_HEIGHT + j];
+			//vesa_array[i*SCREEN_HEIGHT + j] = 2016;
 		}
 }
 
@@ -163,15 +165,19 @@ static color16 mouseBuffer[10][15];
 
 static int mouseX = -1;
 static int mouseY = -1;
+static int drawingMouse = 0;
 void drawMouse(int newX, int newY)
 {
 	int i, j;
+	//cprintf("x: %d, y: %d\n", newX, newY);
+	if (drawingMouse) return;
+	drawingMouse = 1;
 	if (mouseX >= 0)
 	{
 		for (i = 0; i < 10; i++)
 			for (j = 0; j < 15; j++)
 			{
-				vesa_array[(i + mouseX) * SCREEN_HEIGHT + j + mouseY] = mouseBuffer[i][j];
+				vesa_array[(j + mouseY) * SCREEN_WIDTH + i + mouseX] = mouseBuffer[i][j];
 			}
 	}
 	mouseX = newX;
@@ -179,7 +185,13 @@ void drawMouse(int newX, int newY)
 	for (i = 0; i < 10; i++)
 		for (j = 0; j < 15; j++)
 		{
-			if (mouse[i][j] != 2016)
-				vesa_array[(i + mouseX) * SCREEN_HEIGHT + j + mouseY] = mouse[i][j];
+			mouseBuffer[i][j] = vesa_array[(j + mouseY) * SCREEN_WIDTH + i + mouseX];
 		}
+	for (i = 0; i < 10; i++)
+		for (j = 0; j < 15; j++)
+		{
+			if (mouse[i][j] != 2016)
+				vesa_array[(j + mouseY) * SCREEN_WIDTH + i + mouseX] = mouse[i][j];
+		}
+	drawingMouse = 0;
 }
