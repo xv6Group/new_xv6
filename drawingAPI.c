@@ -1,6 +1,6 @@
+#include "types.h"
 #include "context.h"
 #include "drawingAPI.h"
-#include "defs.h"
 #include "user.h"
 
 /**
@@ -43,12 +43,12 @@ unsigned char *hankaku;
 void initializeHankaku()
 {
 
-	int fd, n, i, counter;
-	int nowChar, x, y;
-	cprintf("initialzing Hankaku");
+	int fd, n, i;
+	int x, y;
+	printf(0,"initialzing Hankaku");
 	//打开hankaku.txt文件
 	if((fd = open(HANKAKU, 0)) < 0){
-	  cprintf("cannot open %s\n", HANKAKU);
+	  printf(0,"cannot open %s\n", HANKAKU);
 	  return;
 	}
 	//申请hankaku数组
@@ -74,7 +74,7 @@ void initializeHankaku()
 					hankaku[y] |= (0x80 >> x);
 				}
 				x ++;
-				if (counter >= ASCII_WIDTH)
+				if (x >= ASCII_WIDTH)
 				{
 					x = 0;
 					y ++;
@@ -82,20 +82,20 @@ void initializeHankaku()
 			}
 		}
 	}
-	cprintf("initialzing Hankaku complete!");
+	printf(0,"initialzing Hankaku complete!");
 }
 
 struct File_Node fontFile;
 void initializeFontFile(){
 	int fd;
-	cprintf("initialzing FontFile");
+	printf(0,"initialzing FontFile");
 	if((fd = open(HANKAKU, 0)) < 0){
-		cprintf("cannot open %s\n", HZK16);
+		printf(0,"cannot open %s\n", HZK16);
 		return;
 	}
 	fontFile.buf = malloc(26624*sizeof(unsigned char));
 	fontFile.size = read(fd, fontFile.buf, 26624);
-	cprintf("initialzing FontFile complete!");
+	printf(0,"initialzing FontFile complete!");
 }
 
 void put_ascii(struct Context c, unsigned char ascii, unsigned short colorNum, int x, int y)
@@ -116,7 +116,7 @@ void put_gbk(struct Context c, unsigned char gbk, unsigned short colorNum, int x
 {
 	int tmpX, tmpY;
 	unsigned int offset;
-	unsigned int *hzk16Base;
+	unsigned char *hzk16Base;
 
 	if((gbk & 0x00FF) >= 0xA1 && ((gbk >> 8) & 0x00FF) >= 0xA1) {
 		hzk16Base = fontFile.buf;
@@ -145,10 +145,11 @@ void put_gbk(struct Context c, unsigned char gbk, unsigned short colorNum, int x
 	}
 }
 
-void puts_str(struct Context c, unsigned char *str, unsigned short colorNum, int x, int y)
+void puts_str(struct Context c, char *str, unsigned short colorNum, int x, int y)
 {
-	int i = 0, rowLetterCnt, xTmp;
+	int i = 0, xTmp;
 	short wStr;
+	uint rowLetterCnt;
 
 	rowLetterCnt = strlen(str);
 	for(i = 0, xTmp = x; i < rowLetterCnt;) {
