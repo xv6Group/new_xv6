@@ -31,6 +31,7 @@ OBJS = \
 	window.o\
 	syswindow.o\
 	message.o\
+	vegamode.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
