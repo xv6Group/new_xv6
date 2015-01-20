@@ -24,12 +24,6 @@ main(int argc, char *argv[])
     draw_line(context, 0, 0, 50, 50, 0x0);
     loadBitmap(&pic, "9.bmp");
     draw_picture(context, pic, 0, 0);
-    while(1);
-
-    winid = init_context(&context, 400, 300); 
-    fill_rect(context, 0, 0, context.width, context.height, 0xf800);
-    puts_str(context, "shell: welcome", 0x0, 0, 0);
-    draw_line(context, 0, 0, 50, 50, 0x0);
 
     while(isRun)
     {
