@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
     int pid;//, wpid;
     int winid;
     struct Msg msg;
+    int isRun = 1;
 
     winid = init_context(&context, 800, 600); 
     fill_rect(context, 0, 0, context.width, context.height, 0xffff);
@@ -29,9 +30,8 @@ int main(int argc, char *argv[])
         exit();
     }
 
-    while(1)
+    while(isRun)
     {
-        msg.msg_type = MSG_NONE;
         getMsg(&msg);
         switch(msg.msg_type)
         {
