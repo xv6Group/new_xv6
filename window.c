@@ -46,6 +46,7 @@ WindowLink allocWindow(int left_x, int left_y, int right_x, int right_y, int pid
 			p->prior_window = list_tail;
 			list_tail = p;
 			p->next_window = 0;
+            activated_window = p;
 			createUpdateMsg(p->pid);
 			cprintf("UpdateMsg created for process: %d\n", p->pid);
 			return p;
@@ -106,6 +107,7 @@ void setActivated(int window_id)
 	p->prior_window = list_tail;
 	list_tail = p;
 	p->next_window = 0;
+    activated_window = p;
 	createUpdateMsg(p->pid);
 }
 

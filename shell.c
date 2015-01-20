@@ -35,14 +35,27 @@ main(int argc, char *argv[])
         getMsg(&msg);
         switch(msg.msg_type)
         {
+            case MSG_DOUBLECLICK:
+                i++;
+                puts_str(context, "shell double clicked!", 0x0, 0, 20*i);
+                updateWindow(winid, context.addr);
+                break;
             case MSG_UPDATE:
                 updateWindow(winid, context.addr);
                 printf(0, "shell");
                 break;
             case MSG_LPRESS:
                 i++;
-                printf(0, "shell clicked!\n");
                 puts_str(context, "shell clicked!", 0x0, 0, 20*i);
+                updateWindow(winid, context.addr);
+                break;
+            case MSG_KEYDOWN:
+                i++;
+                printf(0, "key pressed: %s\n", msg.concrete_msg.msg_key.key);
+                char temp[2];
+                temp[0] = msg.concrete_msg.msg_key.key;
+                temp[1] = '\0';
+                puts_str(context, temp, 0*0, 0, 20*i);
                 updateWindow(winid, context.addr);
                 break;
             default:
