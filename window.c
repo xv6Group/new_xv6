@@ -13,6 +13,8 @@ int next_window_id = 1;
 
 static color16* vesa_array = (color16*)VESA_ADDR;
 
+void drawScreen();
+
 void windowlistinit()
 {
 //	WindowLink p;
@@ -66,6 +68,7 @@ int releaseWindow(int window_id)
 			else
 				list_tail = p->prior_window;
 			p->window_id = -1;
+			drawScreen();
 			return 0;
 		}
 	}

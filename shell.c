@@ -14,13 +14,13 @@ main(int argc, char *argv[])
 	initializeFontFile();
     int winid;
     struct Msg msg;
-
+    int running = 1;
     winid = init_context(&context, 400, 300); 
     fill_rect(context, 0, 0, context.width, context.height, 0xf800);
     puts_str(context, "shell: welcome", 0x0, 0, 0);
     draw_line(context, 0, 0, 50, 50, 0x0);
 
-    while(1)
+    while(running)
     {
         getMsg(&msg);
         switch(msg.msg_type)
@@ -28,12 +28,13 @@ main(int argc, char *argv[])
             case MSG_UPDATE:
                 updateWindow(winid, context.addr);
                 printf(0, "shell");
+                running = 0;
                 break;
             default:
                 break;
         }
     }
-
+    
     free_context(&context, winid);
     exit();
 }
