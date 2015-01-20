@@ -187,7 +187,7 @@ void 			mouseintr(uint tick);
 
 //window.c
 //initialize the window list
-void 			initWindowList();
+void 			windowlistinit();
 
 //get the current activated window
 struct Window* 	getActivated();

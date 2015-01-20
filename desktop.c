@@ -6,14 +6,14 @@
 
 struct Context context;
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    int pid, wpid;
+    //int pid, wpid;
 
     init_context(&context, 800, 600); 
-    fill_rect(context, 0, 0, context.width, context.height, 0);
-
+    fill_rect(context, 0, 0, context.width, context.height, 2016);
+    int windowId;
+    /*
     printf(1, "init shell: starting shell\n");
     pid = fork();
     if(pid < 0){
@@ -28,7 +28,9 @@ main(int argc, char *argv[])
 
     while((wpid=wait()) >= 0 && wpid != pid)
       printf(1, "shell finished!\n");
-    
+    */
+    windowId = createWindow(0, 0, 800, 600);
+    updateWindow(windowId, context.addr);
     free_context(&context);
     exit();
 }

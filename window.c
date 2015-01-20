@@ -13,7 +13,7 @@ int next_window_id = 1;
 
 static color16* vesa_array = (color16*)VESA_ADDR;
 
-void initWindowList()
+void windowlistinit()
 {
 //	WindowLink p;
 	memset(window_array, 0, sizeof(Window) * MAXWINDOW);
