@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     //int pid, wpid;
 
     init_context(&context, 800, 600); 
-    fill_rect(context, 0, 0, context.width, context.height, 2016);
+    fill_rect(context, 0, 0, context.width, context.height, 0xdd);
     int windowId;
     /*
     printf(1, "init shell: starting shell\n");
