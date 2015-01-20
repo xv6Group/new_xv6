@@ -24,7 +24,8 @@ main(int argc, char *argv[])
     draw_line(context, 0, 0, 50, 50, 0x0);
     loadBitmap(&pic, "9.bmp");
     draw_picture(context, pic, 0, 0);
-
+    
+    int i = 0;
     while(isRun)
     {
         getMsg(&msg);
@@ -33,6 +34,12 @@ main(int argc, char *argv[])
             case MSG_UPDATE:
                 updateWindow(winid, context.addr);
                 printf(0, "shell");
+                break;
+            case MSG_LPRESS:
+                i++;
+                //printf(0, "shell clicked!\n");
+                puts_str(context, "shell clicked!", 0x0, 0, 100*i);
+                updateWindow(winid, context.addr);
                 break;
             default:
                 break;
