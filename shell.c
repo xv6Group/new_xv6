@@ -14,21 +14,20 @@ main(int argc, char *argv[])
 	initializeFontFile();
     int winid;
     struct Msg msg;
-    int running = 1;
+    int isRun = 1;
     winid = init_context(&context, 400, 300); 
     fill_rect(context, 0, 0, context.width, context.height, 0xf800);
     puts_str(context, "shell: welcome", 0x0, 0, 0);
     draw_line(context, 0, 0, 50, 50, 0x0);
 
-    while(running)
+    while(isRun)
     {
         getMsg(&msg);
         switch(msg.msg_type)
         {
             case MSG_UPDATE:
                 updateWindow(winid, context.addr);
-                printf(0, "shell");
-                running = 0;
+                printf(0, "shell")
                 break;
             default:
                 break;

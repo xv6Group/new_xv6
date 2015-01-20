@@ -11,13 +11,15 @@ WindowLink list_tail = 0;
 Window window_array[MAXWINDOW];
 int next_window_id = 1;
 
-static color16* vesa_array = (color16*)VESA_ADDR;
+//static color16* vesa_array = (color16*)VESA_ADDR;
+color16* vesa_array;
 
 void drawScreen();
 
 void windowlistinit()
 {
 //	WindowLink p;
+    vesa_array = (color16*)VESA_ADDR;
 	memset(window_array, 0, sizeof(Window) * MAXWINDOW);
 }
 
