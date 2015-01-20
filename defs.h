@@ -200,6 +200,7 @@ int 			getClickedPid(int position_x, int position_y);
 struct Window* 	getWindowById(int window_id);
 struct Window* 	getWindowByPoint(int position_x, int position_y);
 void			drawWindow(struct Window*, ushort*);
+void 			drawMouse(int newX, int newY);
 
 //message.c
 void 			msgqueueinit();

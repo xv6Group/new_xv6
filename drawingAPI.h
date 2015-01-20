@@ -22,5 +22,6 @@ void fill_rect(struct Context c, unsigned int bx, unsigned int by, unsigned int 
 void puts_str(struct Context c, char *str, unsigned short colorNum, int x, int y);
 void draw_picture(Context c, struct PicNode pic, int x, int y);
 void draw_line(Context c, int x0, int y0, int x1, int y1, unsigned short color);
+void initializeHankaku();
 
 #endif

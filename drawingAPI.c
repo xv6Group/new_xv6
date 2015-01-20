@@ -233,7 +233,7 @@ void draw_line(Context c, int x0, int y0, int x1, int y1, unsigned short color)
 		dx = (x1 >= x0) ? (((x1 - x0 + 1) << 10) / len) : (((x1 - x0 - 1) << 10) / len);
 	}
 	for(i = 0; i < len; i++) {
-		//printf(0, "draw line point: x=%d, y=%d\n", (x >> 10), (y >> 10));
+		printf(0, "draw line point: x=%d, y=%d\n", (x >> 10), (y >> 10));
 		draw_point(c, (x >> 10), (y >> 10), color);
 		y += dy;
 		x += dx;

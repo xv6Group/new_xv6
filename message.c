@@ -102,6 +102,7 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	else//鼠标事件
 	{
 		pid = getClickedPid(pos_x, pos_y);
+		drawMouse(pos_x, pos_y);
 	}
 
 	dispatch(pid, msg_index);
@@ -138,6 +139,7 @@ void getMsg(int pid, struct Msg* ptr)
 			return;
 		}
 	}
+    ptr->msg_type = MSG_NONE;
 }
 
 int sys_getMsg()

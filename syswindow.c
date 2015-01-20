@@ -26,10 +26,10 @@ int sys_updateWindow()
 	int window_id;
 	color16* context;
 	WindowLink pWindow;
-	cprintf("updateWindow called");
 	if (argint(0, &window_id) < 0)
 		return -1;
 	pWindow = getWindowById(window_id);
+	cprintf("updateWindow called: %d\n", pWindow);
 	if (pWindow == 0) return -1;
 	int size = ((pWindow->window_position).right_x - (pWindow->window_position).left_x) *
 		((pWindow->window_position).right_y - (pWindow->window_position).left_y);
