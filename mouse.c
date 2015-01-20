@@ -9,6 +9,10 @@
 
 static struct spinlock mouse_lock;
 
+//large displacement
+static int x_large_dispalecement = 0;
+static int y_large_dispalecement = 0;
+
 //origin info
 static int state = 0;
 static int left_down = 0;
@@ -90,13 +94,15 @@ mouseintr(uint tick)
 			dis = ch;
 		else
 			dis = ch - 256;
-		if(dis > 50 || dis < -50)
+		if(dis == 127 || dis == -127)
 		{
+			x_large_dispalecement = 1;
 			//cprintf("error");
-			state = 1;
-			release(&mouse_lock);
-			return;
+			// state = 1;
+			// release(&mouse_lock);
+			// return;
 		}
+		else x_large_dispalecement = 0;
 		//cprintf("xdis: %d, sign: %d\n", dis, x_sign);
 		x_position += dis;
 		if(x_position < 0)
@@ -115,13 +121,15 @@ mouseintr(uint tick)
 			dis = ch;
 		else
 			dis = ch - 256;
-		if(dis > 50 || dis < -50)
+		if(dis == 127 || dis == -127)
 		{
+			y_large_dispalecement = 1;
 			//cprintf("error");
-			state = 1;
-			release(&mouse_lock);
-			return;
+			// state = 1;
+			// release(&mouse_lock);
+			// return;
 		}
+		else y_large_dispalecement = 0;
 		//cprintf("ydis: %d, sign: %d, overflow: %d\n", dis, y_sign, y_overflow);
 		y_position -= dis;
 		if(y_position < 0)
@@ -219,7 +227,8 @@ mouseintr(uint tick)
 		default:
 			break;
 	}
-	createMsg(MsgType, x_position, y_position, 0);
+	if (y_large_dispalecement == 0 && x_large_dispalecement == 0)
+		createMsg(MsgType, x_position, y_position, 0);
 
 	// struct Window* win;
 	// int click_icon = -1;

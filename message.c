@@ -101,7 +101,15 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	}
 	else//鼠标事件
 	{
-		pid = getClickedPid(pos_x, pos_y);
+        struct Window* win_ptr = getWindowByPoint(pos_x, pos_y);
+        cprintf("%d\n", win_ptr);
+        pid = win_ptr->pid;
+        int relative_x = pos_x - win_ptr->window_position.left_x;
+        int relative_y = pos_y - win_ptr->window_position.left_y;
+        cprintf("relative x: %d\n", relative_x);
+        cprintf("relative y: %d\n", relative_y);
+        MsgQueue[msg_index].concrete_msg.msg_mouse.x = relative_x;
+        MsgQueue[msg_index].concrete_msg.msg_mouse.y = relative_y;
 		drawMouse(pos_x, pos_y);
 	}
 

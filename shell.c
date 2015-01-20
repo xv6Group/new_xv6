@@ -15,11 +15,13 @@ main(int argc, char *argv[])
     int winid;
     struct Msg msg;
     int isRun = 1;
+    int i = 0;
     //PICNODE pic;
 
     winid = init_context(&context, 400, 300);
 
     fill_rect(context, 0, 0, context.width, context.height, 0xf800);
+
 //    puts_str(context, "shell: welcome", 0x0, 0, 0);
 //    draw_line(context, 0, 0, 50, 50, 0x0);
 //    loadBitmap(&pic, "9.bmp");
@@ -36,6 +38,12 @@ main(int argc, char *argv[])
             case MSG_UPDATE:
                 updateWindow(winid, context.addr);
                 printf(0, "shell");
+                break;
+            case MSG_LPRESS:
+                i++;
+                printf(0, "shell clicked!\n");
+                puts_str(context, "shell clicked!", 0x0, 0, 20*i);
+                updateWindow(winid, context.addr);
                 break;
             default:
                 break;
