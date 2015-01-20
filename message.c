@@ -98,6 +98,7 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	if(msg_type == MSG_KEYDOWN)//键盘事件
 	{
 		pid = getActivated()->pid;
+        cprintf("key pressed!  pid:%d\n", pid);
 	}
 	else//鼠标事件
 	{
