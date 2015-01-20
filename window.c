@@ -81,9 +81,9 @@ int inClientRect(WindowLink pWindow, int position_x, int position_y)
 {
 	//cprintf("WindowID: %d, x: %d, y: %d\n", pWindow->window_id, position_x, position_y);
 	return (pWindow->window_position).left_x <= position_x &&
-		(pWindow->window_position).right_x >= position_x &&
+		(pWindow->window_position).right_x > position_x &&
 		(pWindow->window_position).left_y <= position_y &&
-		(pWindow->window_position).right_y >= position_y ? 1 : 0;
+		(pWindow->window_position).right_y > position_y ? 1 : 0;
 }
 
 void setActivated(int window_id)

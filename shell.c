@@ -37,8 +37,8 @@ main(int argc, char *argv[])
                 break;
             case MSG_LPRESS:
                 i++;
-                //printf(0, "shell clicked!\n");
-                puts_str(context, "shell clicked!", 0x0, 0, 100*i);
+                printf(0, "shell clicked!\n");
+                puts_str(context, "shell clicked!", 0x0, 0, 20*i);
                 updateWindow(winid, context.addr);
                 break;
             default:
