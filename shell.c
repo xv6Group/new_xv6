@@ -19,7 +19,6 @@ main(int argc, char *argv[])
 
     while(1)
     {
-        msg.msg_type = MSG_NONE;
         getMsg(&msg);
         switch(msg.msg_type)
         {
