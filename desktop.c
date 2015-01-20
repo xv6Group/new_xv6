@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
     init_context(&context, 800, 600); 
     fill_rect(context, 0, 0, context.width, context.height, 0xdd);
     int windowId;
+    int result;
     /*
     printf(1, "init shell: starting shell\n");
     pid = fork();
@@ -30,7 +31,10 @@ int main(int argc, char *argv[])
       printf(1, "shell finished!\n");
     */
     windowId = createWindow(0, 0, 800, 600);
-    updateWindow(windowId, context.addr);
+    printf(0, "windowId: %d\n", windowId);
+    result = updateWindow(windowId, context.addr);
+    printf(0, "updateResult: %d\n", result);
+    while(1);
     free_context(&context);
     exit();
 }
