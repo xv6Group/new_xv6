@@ -1,9 +1,10 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#define VESA_ADDR 0xFC000000
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
+//#define VESA_ADDR 0xFC000000
+//#define SCREEN_WIDTH 800
+//#define SCREEN_HEIGHT 600
+#include "vesamode.h"
 
 //size of mouse
 #define SIZE_X_MOUSE 10

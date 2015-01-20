@@ -6,7 +6,7 @@
 #include "proc.h"
 #include "x86.h"
 #include "message.h"
-#include "vegamode.h"
+#include "vesamode.h"
 
 static void startothers(void);
 static void mpmain(void)  __attribute__((noreturn));
@@ -35,7 +35,7 @@ main(void)
   fileinit();      // file table
   iinit();         // inode cache
   ideinit();       // disk 
-  vegamodeinit();
+  vesamodeinit();
   msgqueueinit();
   msgtableinit();
   windowlistinit();

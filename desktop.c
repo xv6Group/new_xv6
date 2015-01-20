@@ -5,6 +5,7 @@
 #include "drawingAPI.h"
 #include "bitmap.h"
 #include "message.h"
+#include "vesamode.h"
 
 struct Context context;
 
@@ -23,7 +24,7 @@ int main(int argc, char *argv[])
     initializeHankaku();
     initializeFontFile();
 
-    winid = init_context(&context, 800, 600); 
+    winid = init_context(&context, SCREEN_WIDTH, SCREEN_HEIGHT); 
     fill_rect(context, 0, 0, context.width, context.height, 0xffff);
     puts_str(context, "desktop: welcome", 0x0, 0, 0);
 
