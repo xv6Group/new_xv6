@@ -12,18 +12,6 @@
 start:
   cli                         # BIOS enabled interrupts; disable
   
-  # VESA MODE
-  movw    $0x4f02, %ax
-  movw    $0x4114, %bx
-  int     $0x10
-
-  movw    $0x9000, %bx
-  movw    %bx, %es
-  movw    $0x0, %di
-  movw    $0x4f01, %ax
-  movw    $0x4114, %bx
-  int     $0x10
-
   # Zero data segment registers DS, ES, and SS.
   xorw    %ax,%ax             # Set %ax to zero
   movw    %ax,%ds             # -> Data Segment
@@ -47,6 +35,17 @@ seta20.2:
 
   movb    $0xdf,%al               # 0xdf -> port 0x60
   outb    %al,$0x60
+
+  # Get VEGA mode
+  movw    $0x1000, %di
+  movw    $0x4f01, %ax
+  movw    $0x4114, %cx
+  int     $0x10
+
+  # Set VEGA mode
+  movw    $0x4f02, %ax
+  movw    $0x4114, %bx
+  int     $0x10
 
   # Switch from real to protected mode.  Use a bootstrap GDT that makes
   # virtual addresses map directly to physical addresses so that the

@@ -15,6 +15,7 @@ main(int argc, char *argv[])
 	initializeFontFile();
     int winid;
     struct Msg msg;
+    int isRun = 1;
     PICNODE pic;
 
     winid = init_context(&context, 400, 300);
@@ -23,7 +24,14 @@ main(int argc, char *argv[])
     draw_line(context, 0, 0, 50, 50, 0x0);
     loadBitmap(&pic, "9.bmp");
     draw_picture(context, pic, 0, 0);
-    while(1)
+    while(1);
+
+    winid = init_context(&context, 400, 300); 
+    fill_rect(context, 0, 0, context.width, context.height, 0xf800);
+    puts_str(context, "shell: welcome", 0x0, 0, 0);
+    draw_line(context, 0, 0, 50, 50, 0x0);
+
+    while(isRun)
     {
         getMsg(&msg);
         switch(msg.msg_type)
@@ -36,7 +44,7 @@ main(int argc, char *argv[])
                 break;
         }
     }
-
+    
     free_context(&context, winid);
     exit();
 }
