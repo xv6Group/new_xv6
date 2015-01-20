@@ -14,20 +14,15 @@ int main(int argc, char *argv[])
 
     int windowId;
     int result;
-
     int pid;//, wpid;
     int winid;
     struct Msg msg;
     short isRun = 1;
     short isInit = 1;
 
-    initializeHankaku();
-    initializeFontFile();
-
     winid = init_context(&context, SCREEN_WIDTH, SCREEN_HEIGHT); 
     fill_rect(context, 0, 0, context.width, context.height, 0xffff);
     puts_str(context, "desktop: welcome", 0x0, 0, 0);
-
 
     while(isRun)
     {

@@ -3,6 +3,7 @@
 #include "drawingAPI.h"
 #include "user.h"
 #include "bitmap.h"
+#include "windowStyle.h"
 
 /**
 *draw_point : if the point is outside the window
@@ -58,12 +59,12 @@ char buf[512];
 //hankaku是一个数组，将hankaku.txt文件中的每一行转化成一个8位整数（unsigned short）
 //每16个整数可以代表一个字符
 unsigned char *hankaku;
-void initializeHankaku()
+void initializeASCII()
 {
 
 	int fd, n, i;
 	int x, y;
-	printf(0,"initialzing Hankaku\n");
+	printf(0,"initialzing ASCII\n");
 	//打开hankaku.txt文件
 	if((fd = open(HANKAKU, 0)) < 0){
 	  printf(0,"cannot open %s\n", HANKAKU);
@@ -106,20 +107,30 @@ void initializeHankaku()
 //	{
 //		printBinary(hankaku[i]);
 //	}
-	printf(0,"initialzing Hankaku complete!\n");
+	printf(0,"initialzing ASCII complete!\n");
+	close(fd);
+}
+
+void freeASCII(){
+	free(hankaku);
 }
 
 struct File_Node fontFile;
-void initializeFontFile(){
+void initializeGBK(){
 	int fd;
-	printf(0,"initialzing FontFile\n");
+	printf(0,"initialzing gbk\n");
 	if((fd = open(HANKAKU, 0)) < 0){
 		printf(0,"cannot open %s\n", HZK16);
 		return;
 	}
 	fontFile.buf = malloc(26624*sizeof(unsigned char));
 	fontFile.size = read(fd, fontFile.buf, 26624);
-	printf(0,"initialzing FontFile complete!\n");
+	printf(0,"initialzing gbk complete!\n");
+	close(fd);
+}
+
+void freeGBK(){
+	free(fontFile.buf);
 }
 
 void put_ascii(struct Context c, unsigned char ascii, unsigned short colorNum, int x, int y)
@@ -202,13 +213,13 @@ void draw_picture(Context c, PICNODE pic, int x, int y)
 	int i, j;
 	unsigned short color;
 	RGBQUAD rgb;
-	for (i = y; i < y + pic.height; i++)
+	for (i = 0; i < pic.height; i++)
 	{
-		for (j = x; j < x + pic.width; j++)
+		for (j = 0; j < pic.width; j++)
 		{
 			rgb = pic.data[i*pic.width+j];
 			color = (unsigned short)_RGB16BIT565(rgb.rgbRed, rgb.rgbGreen, rgb.rgbBlue);
-			draw_point(c, j, i, color);
+			draw_point(c, j + y, i + x, color);
 		}
 	}
 }
@@ -238,5 +249,22 @@ void draw_line(Context c, int x0, int y0, int x1, int y1, unsigned short color)
 		y += dy;
 		x += dx;
 	}
+}
+
+void
+draw_window(Context c, char *title)
+{
+  PICNODE pic;
+  draw_line(c, 0, 0, c.width - 1, 0, BORDERLINE_COLOR);
+  draw_line(c, c.width - 1, 0, c.width - 1, c.height - 1, BORDERLINE_COLOR);
+  draw_line(c, c.width - 1, c.height - 1, 0, c.height - 1, BORDERLINE_COLOR);
+  draw_line(c, 0, c.height - 1, 0, 0, BORDERLINE_COLOR);
+  fill_rect(c, 1, 1, c.width - 2, BOTTOMBAR_HEIGHT, TOPBAR_COLOR);
+  fill_rect(c, 1, c.height - 1 - BOTTOMBAR_HEIGHT, c.width - 2, BOTTOMBAR_HEIGHT, BOTTOMBAR_COLOR);
+
+  loadBitmap(&pic, "close.bmp");
+  draw_picture(c, pic, 3, 3);
+  puts_str(c, title, TITLE_COLOR, TITLE_OFFSET_X, TITLE_OFFSET_Y);
+
 }
 

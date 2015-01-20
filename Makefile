@@ -192,7 +192,7 @@ UPROGS=\
 	_shell\
 
 fs.img: mkfs README $(UPROGS)
-	./mkfs fs.img README $(UPROGS) hankaku.txt 9.bmp
+	./mkfs fs.img README $(UPROGS) hankaku.txt close.bmp
 
 -include *.d
 

@@ -45,7 +45,7 @@ void loadBitmap(PICNODE *pic, char pic_name[])
 	temp_DWORD=(DWORD*)(BmpFileHeader+sizeof(bitHead.bfType)+sizeof(bitHead.bfSize)+sizeof(bitHead.bfReserved1)+sizeof(bitHead.bfReserved2));
 	bitHead.bfOffBits=*temp_DWORD;
 	printf(0, "reading BmpFileHeader success!\n");
-	showBmpHead(&bitHead);
+	//showBmpHead(&bitHead);
 	printf(0, "\n\n");
 //
 //	//读取位图信息头信息
@@ -54,7 +54,7 @@ void loadBitmap(PICNODE *pic, char pic_name[])
 	height = bitInfoHead.biHeight;
 	printf(0, "bmp width: %d, height: %d, size: %d\n", width, height, width*height*sizeof(RGBQUAD));
 	//fread(&bitInfoHead,1,sizeof(BITMAPINFOHEADER),pfile);
-	showBmpInforHead(&bitInfoHead);
+	//showBmpInforHead(&bitInfoHead);
 	printf(0, "\n");
 	if (n == 0)
 	{
