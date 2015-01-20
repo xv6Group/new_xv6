@@ -10,6 +10,8 @@ struct Context context;
 int
 main(int argc, char *argv[])
 {
+	initializeHankaku();
+	initializeFontFile();
     int winid;
     struct Msg msg;
     int isRun = 1;
@@ -17,6 +19,7 @@ main(int argc, char *argv[])
     winid = init_context(&context, 400, 300); 
     fill_rect(context, 0, 0, context.width, context.height, 0xf800);
     puts_str(context, "shell: welcome", 0x0, 0, 0);
+    draw_line(context, 0, 0, 50, 50, 0x0);
 
     while(isRun)
     {

@@ -2,6 +2,7 @@
 #include "context.h"
 #include "drawingAPI.h"
 #include "user.h"
+#include "bitmap.h"
 
 /**
 *draw_point : if the point is outside the window
@@ -36,6 +37,23 @@ fill_rect(struct Context c, unsigned int bx, unsigned int by, unsigned int width
 	}
 }
 
+void printBinary(char c)
+{
+	int i;
+	for (i = 0; i < 8; i++)
+	{
+		if(((c << i) & 0x80) != 0)
+		{
+			printf(0, "1");
+		}
+		else
+		{
+			printf(0, "0");
+		}
+	}
+
+	printf(0, "\n");
+}
 char buf[512];
 //hankaku是一个数组，将hankaku.txt文件中的每一行转化成一个8位整数（unsigned short）
 //每16个整数可以代表一个字符
@@ -45,14 +63,14 @@ void initializeHankaku()
 
 	int fd, n, i;
 	int x, y;
-	printf(0,"initialzing Hankaku");
+	printf(0,"initialzing Hankaku\n");
 	//打开hankaku.txt文件
 	if((fd = open(HANKAKU, 0)) < 0){
 	  printf(0,"cannot open %s\n", HANKAKU);
 	  return;
 	}
 	//申请hankaku数组
-	hankaku = malloc(ASCII_NUM*sizeof(unsigned char));
+	hankaku = malloc(ASCII_NUM*ASCII_HEIGHT);
 	for (i = 0; i < ASCII_NUM; i++)
 	{
 		hankaku[i] = 0;
@@ -67,6 +85,7 @@ void initializeHankaku()
 	while((n = read(fd, buf, sizeof(buf))) > 0)
 	{
 		for (i = 0; i < n; i++){
+			//printf(0,"%c, %d", buf[i], i);
 			if (buf[i] == '*' || buf[i] == '.')
 			{
 				if (buf[i] == '*')
@@ -82,29 +101,35 @@ void initializeHankaku()
 			}
 		}
 	}
-	printf(0,"initialzing Hankaku complete!");
+
+//	for (i = 0; i < ASCII_NUM * ASCII_HEIGHT; i++)
+//	{
+//		printBinary(hankaku[i]);
+//	}
+	printf(0,"initialzing Hankaku complete!\n");
 }
 
 struct File_Node fontFile;
 void initializeFontFile(){
 	int fd;
-	printf(0,"initialzing FontFile");
+	printf(0,"initialzing FontFile\n");
 	if((fd = open(HANKAKU, 0)) < 0){
 		printf(0,"cannot open %s\n", HZK16);
 		return;
 	}
 	fontFile.buf = malloc(26624*sizeof(unsigned char));
 	fontFile.size = read(fd, fontFile.buf, 26624);
-	printf(0,"initialzing FontFile complete!");
+	printf(0,"initialzing FontFile complete!\n");
 }
 
 void put_ascii(struct Context c, unsigned char ascii, unsigned short colorNum, int x, int y)
 {
 	int tmpX, tmpY;
-
+	printf(0, "put ascii: %c, color: %d\n", ascii, colorNum);
 	for(tmpY = y; tmpY < y + 16; tmpY++) {
 		for(tmpX = 0; tmpX < 8; tmpX++) {
 			if((((hankaku + (ascii * 16))[tmpY - y] << tmpX) & 0x80) == 0x80) {
+				//printf(0, "x: %d, y: %d\n", x + tmpX, tmpY);
 				draw_point(c, x + tmpX, tmpY, colorNum);
 				//sheet->buf[tmpY * sheet->width + x + tmpX] = colorNum;
 			}
@@ -147,6 +172,7 @@ void put_gbk(struct Context c, unsigned char gbk, unsigned short colorNum, int x
 
 void puts_str(struct Context c, char *str, unsigned short colorNum, int x, int y)
 {
+	printf(0,"puts string : %s\n", str);
 	int i = 0, xTmp;
 	short wStr;
 	uint rowLetterCnt;
@@ -164,6 +190,53 @@ void puts_str(struct Context c, char *str, unsigned short colorNum, int x, int y
 			xTmp += 16;
 			i += 2;
 		}
+	}
+}
+
+int _RGB16BIT565(int r,int g,int b){
+	return ((b / 8)+((g / 4)<<5)+((r / 8)<<11));
+}
+
+void draw_picture(Context c, PICNODE pic, int x, int y)
+{
+	int i, j;
+	unsigned short color;
+	RGBQUAD rgb;
+	for (i = y; i < y + pic.height; i++)
+	{
+		for (j = x; j < x + pic.width; j++)
+		{
+			rgb = pic.data[i*pic.width+j];
+			color = (unsigned short)_RGB16BIT565(rgb.rgbRed, rgb.rgbGreen, rgb.rgbBlue);
+			draw_point(c, j, i, color);
+		}
+	}
+}
+
+void draw_line(Context c, int x0, int y0, int x1, int y1, unsigned short color)
+{
+	int dx, dy, x, y, len, i;
+	dx = x1 - x0;
+	dy = y1 - y0;
+	x = x0 << 10;
+	y = y0 << 10;
+	dx = (dx < 0) ? -dx : dx;
+	dy = (dy < 0) ? -dy : dy;
+	if(dx >= dy) {
+		len = dx + 1;
+		dx = (x1 > x0) ? 1024 : -1024;
+		dy = (y1 >= y0) ? (((y1 - y0 + 1) << 10) / len) : (((y1 - y0 - 1) << 10) / len);
+	}
+	else {
+		len = dy + 1;
+		dy = (y1 > y0) ? 1024 : -1024;
+		dx = (x1 >= x0) ? (((x1 - x0 + 1) << 10) / len) : (((x1 - x0 - 1) << 10) / len);
+	}
+	for(i = 0; i < len; i++) {
+		printf(0, "draw line point: x=%d, y=%d\n", (x >> 10), (y >> 10));
+		draw_point(c, (x >> 10), (y >> 10), color);
+		y += dy;
+		x += dx;
 	}
 }
 
