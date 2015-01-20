@@ -125,7 +125,7 @@ void initializeFontFile(){
 void put_ascii(struct Context c, unsigned char ascii, unsigned short colorNum, int x, int y)
 {
 	int tmpX, tmpY;
-	printf(0, "put ascii: %c, color: %d\n", ascii, colorNum);
+	//printf(0, "put ascii: %c, color: %d\n", ascii, colorNum);
 	for(tmpY = y; tmpY < y + 16; tmpY++) {
 		for(tmpX = 0; tmpX < 8; tmpX++) {
 			if((((hankaku + (ascii * 16))[tmpY - y] << tmpX) & 0x80) == 0x80) {
@@ -172,7 +172,7 @@ void put_gbk(struct Context c, unsigned char gbk, unsigned short colorNum, int x
 
 void puts_str(struct Context c, char *str, unsigned short colorNum, int x, int y)
 {
-	printf(0,"puts string : %s\n", str);
+	//printf(0,"puts string : %s\n", str);
 	int i = 0, xTmp;
 	short wStr;
 	uint rowLetterCnt;
@@ -233,7 +233,7 @@ void draw_line(Context c, int x0, int y0, int x1, int y1, unsigned short color)
 		dx = (x1 >= x0) ? (((x1 - x0 + 1) << 10) / len) : (((x1 - x0 - 1) << 10) / len);
 	}
 	for(i = 0; i < len; i++) {
-		printf(0, "draw line point: x=%d, y=%d\n", (x >> 10), (y >> 10));
+		//printf(0, "draw line point: x=%d, y=%d\n", (x >> 10), (y >> 10));
 		draw_point(c, (x >> 10), (y >> 10), color);
 		y += dy;
 		x += dx;

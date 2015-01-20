@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     result = updateWindow(windowId, context.addr);
     printf(0, "updateResult: %d\n", result);
 
-    while(1);
+    //while(1);
     free_context(&context, winid);
     exit();
 }
