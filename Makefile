@@ -139,7 +139,7 @@ vectors.S: vectors.pl
 	perl vectors.pl > vectors.S
 
 ULIB = ulib.o usys.o printf.o umalloc.o
-GUILIB = context.o drawingAPI.o
+GUILIB = context.o drawingAPI.o bitmap.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
@@ -191,7 +191,7 @@ UPROGS=\
 	_shell\
 
 fs.img: mkfs README $(UPROGS)
-	./mkfs fs.img README $(UPROGS)
+	./mkfs fs.img README $(UPROGS) hankaku.txt 9.bmp
 
 -include *.d
 
