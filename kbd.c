@@ -3,12 +3,12 @@
 #include "defs.h"
 #include "kbd.h"
 #include "window.h"
-#include "gui.h"
+//#include "gui.h"
 #include "message.h"
 
 static int flag_caps = 0;
 static int flag_shift = 0;
-static int flag = 0;
+//static int flag = 0;
 
 void
 kbdintr(void)

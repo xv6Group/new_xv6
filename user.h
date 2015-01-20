@@ -24,7 +24,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-void getMsg(int, struct Msg*);
+int getMsg(struct Msg*);
 int createWindow(int, int, int, int);
 int destroyWindow(int);
 int updateWindow(int, unsigned short*);

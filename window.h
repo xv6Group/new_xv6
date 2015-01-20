@@ -1,3 +1,15 @@
+#ifndef WINDOW_H
+#define WINDOW_H
+
+#define VESA_ADDR 0xFC000000
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
+
+//size of mouse
+#define SIZE_X_MOUSE 10
+#define SIZE_Y_MOUSE 15
+typedef unsigned short color16;
+
 typedef struct Rect
 {
 	int left_x;
@@ -15,26 +27,12 @@ typedef struct Window
 //	char *window_title;//窗口标题栏字符串
 	Rect window_position;
 	//int z_order;
-	Window *prior_window;
-	Window *next_window;
+	struct Window *prior_window;
+	struct Window *next_window;
 }Window;
 
 typedef Window* WindowLink;//用队列中的先后顺序表示窗口堆叠的次序
 
 extern WindowLink window_list;
 
-//initialize the window list
-void initWindowList();
-
-//get the current activated window
-WindowLink getActivated();
-
-void setActivated(int window_id);
-WindowLink allocWindow(int left_x, int left_y, int right_x, int right_y, int pid);
-int releaseWindow(int window_id);
-int inClientRect(WindowLink pWindow, int position_x, int position_y);
-int getClickedPid(int position_x, int position_y);
-
-int sys_createWindow(void);
-int sys_destoryWindow(void);
-int sys_updateWindow(void);
+#endif

@@ -127,7 +127,7 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_getMsg]  sys_getMsg,
 [SYS_createWindow] sys_createWindow,
-[SYS_destoryWindow] sys_destoryWindow,
+[SYS_destroyWindow] sys_destroyWindow,
 [SYS_updateWindow] sys_updateWindow,
 };
 

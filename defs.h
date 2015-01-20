@@ -8,6 +8,8 @@ struct rtcdate;
 struct spinlock;
 struct stat;
 struct superblock;
+struct Window;
+struct Msg;
 
 // bio.c
 void            binit(void);
@@ -178,6 +180,36 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
+
+//mouse.c
+void 			mouseinit();
+void 			mouseintr(uint tick);
+
+//window.c
+//initialize the window list
+void 			initWindowList();
+
+//get the current activated window
+struct Window* 	getActivated();
+
+void 			setActivated(int window_id);
+struct Window* 	allocWindow(int left_x, int left_y, int right_x, int right_y, int pid);
+int 			releaseWindow(int window_id);
+int 			inClientRect(struct Window* pWindow, int position_x, int position_y);
+int 			getClickedPid(int position_x, int position_y);
+struct Window* 	getWindowById(int window_id);
+struct Window* 	getWindowByPoint(int position_x, int position_y);
+void			drawWindow(struct Window*, ushort*);
+
+//message.c
+void 			msgqueueinit();
+void 			msgtableinit();
+//int 			requireMsg(int, int, int, char);
+//void			dispatch(int, int);
+void 			createMsg(int, int, int, char);
+void 			createUpdateMsg(int);
+//void			getMsg(int, struct Msg*);
+
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

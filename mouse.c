@@ -30,11 +30,11 @@ static int x_position = 0;
 static int y_position = 0;
 static int x_drag_start = 0;
 static int y_drag_start = 0;
-static int x_drag_window = -1;
-static int y_drag_window = -1;
+//static int x_drag_window = -1;
+//static int y_drag_window = -1;
 
-static int dragging_top_window = 0;
-static int dragging_count = 0;
+//static int dragging_top_window = 0;
+//static int dragging_count = 0;
 
 void
 mouseinit()

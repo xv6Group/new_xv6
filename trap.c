@@ -71,6 +71,11 @@ trap(struct trapframe *tf)
     uartintr();
     lapiceoi();
     break;
+  //mouse trap
+  case T_IRQ0 + IRQ_MOUS:
+    mouseintr(ticks);
+    lapiceoi();
+    break;
   case T_IRQ0 + 7:
   case T_IRQ0 + IRQ_SPURIOUS:
     cprintf("cpu%d: spurious interrupt at %x:%x\n",

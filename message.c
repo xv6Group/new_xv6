@@ -1,10 +1,21 @@
+#include "types.h"
 #include "defs.h"
-#include "messages.h"
+#include "param.h"
+#include "mmu.h"
+#include "proc.h"
+#include "message.h"
 #include "window.h"
+
+//全局消息队列
+struct Msg MsgQueue[MAX_QUEUE_LENGTH];
+
+//系统维护的各进程消息队列列表
+struct MsgTableEntry MsgTable[MAX_PROCESS_NUMBER];
 
 void msgqueueinit()
 {
-	for(int i = 0; i < MAX_QUEUE_LENGTH; i++)
+	int i;
+	for(i = 0; i < MAX_QUEUE_LENGTH; i++)
 	{
 		MsgQueue[i].msg_type = MSG_UNUSED;
 	}
@@ -12,7 +23,8 @@ void msgqueueinit()
 
 void msgtableinit()
 {
-	for(int i = 0; i < MAX_PROCESS_NUMBER; i++)
+	int i;
+	for(i = 0; i < MAX_PROCESS_NUMBER; i++)
 	{
 		MsgTable[i].pid = -1;
 	}
@@ -49,7 +61,8 @@ int requireMsg(int msg_type, int pos_x, int pos_y, char key)
 //将msg加入MsgTable中对应的pid项
 void dispatch(int pid, int msg_index)
 {
-	for(int i = 0; i < MAX_PROCESS_NUMBER; i++)
+	int i;
+	for(i = 0; i < MAX_PROCESS_NUMBER; i++)
 	{
 		if(MsgTable[i].pid == pid)
 		{
@@ -63,7 +76,7 @@ void dispatch(int pid, int msg_index)
 			return;
 		}
 	}
-	for (int i = 0; i < MAX_PROCESS_NUMBER; i++)
+	for (i = 0; i < MAX_PROCESS_NUMBER; i++)
 	{
 		if(MsgTable[i].pid == -1)
 		{
@@ -96,7 +109,7 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 
 void createUpdateMsg(int pid)
 {
-	int msg_index = requireMsg(MSG_UPDATE, 0, 0, " ");
+	int msg_index = requireMsg(MSG_UPDATE, 0, 0, ' ');
 	if (msg_index == -1) return;
 	
 	dispatch(pid, msg_index);
@@ -105,7 +118,8 @@ void createUpdateMsg(int pid)
 //系统调用，获得一个进程当前需要处理的msg，并将其从MsgTable和MsgQueue中删除
 void getMsg(int pid, struct Msg* ptr)
 {
-	for(int i = 0; i < MAX_PROCESS_NUMBER; i++)
+	int i;
+	for(i = 0; i < MAX_PROCESS_NUMBER; i++)
 	{
 		if(MsgTable[i].pid == pid)
 		{
@@ -126,22 +140,11 @@ void getMsg(int pid, struct Msg* ptr)
 	}
 }
 
-//调试
-int main()
+int sys_getMsg()
 {
-	/*initMsgQueue();
-	initMsgTable();
-	createMsg(MSG_KEYDOWN,0,1,'a',0);
-	createMsg(MSG_LPRESS,0,1,'a',0);
-	createMsg(MSG_RPRESS,0,1,'a',0);
-	createMsg(MSG_KEYDOWN,0,1,'B',1);
-	createMsg(MSG_KEYDOWN,0,1,'C',2);
-	createMsg(MSG_KEYDOWN,0,1,'B',1);
-
-	struct Msg temp_ptr;
-	getMsg(0, &temp_ptr);
-	getMsg(0, &temp_ptr);
-	getMsg(0, &temp_ptr);
-	getMsg(0, &temp_ptr);*/
+	struct Msg* ptr;
+	if (argptr(0, (void*)&ptr, sizeof(*ptr)) < 0)
+		return -1;
+	getMsg(proc->pid, ptr);
 	return 0;
 }

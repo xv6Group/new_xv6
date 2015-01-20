@@ -27,6 +27,10 @@ OBJS = \
 	uart.o\
 	vectors.o\
 	vm.o\
+	mouse.o\
+	window.o\
+	syswindow.o\
+	message.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf

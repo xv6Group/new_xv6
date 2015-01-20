@@ -41,18 +41,12 @@ typedef struct Msg
 	int next_msg;//下一个消息在全局消息队列中的索引
 } Msg;
 
-//全局消息队列
-struct Msg MsgQueue[MAX_QUEUE_LENGTH];
-
 //进程消息队列表项
 typedef struct MsgTableEntry
 {
 	int pid;
 	int first_msg;//待处理的第一个消息在全局消息队列中的索引
 } MsgTableEntry;
-
-//系统维护的各进程消息队列列表
-struct MsgTableEntry MsgTable[MAX_PROCESS_NUMBER];
 
 extern void createMsg(int msg_type, int pos_x, int pos_y, char key);
 extern void msgqueueinit();
