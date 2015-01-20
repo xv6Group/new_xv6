@@ -17,12 +17,13 @@ start:
   movw    $0x4114, %bx
   int     $0x10
 
-  mov     $0x9000, %bx
-  mov     %bx, %es
-  mov     $0x0, %di
-  mov     $0x4f01, %ax
-  mov     $0x4114, %bx
+  movw    $0x9000, %bx
+  movw    %bx, %es
+  movw    $0x0, %di
+  movw    $0x4f01, %ax
+  movw    $0x4114, %bx
   int     $0x10
+
   # Zero data segment registers DS, ES, and SS.
   xorw    %ax,%ax             # Set %ax to zero
   movw    %ax,%ds             # -> Data Segment
