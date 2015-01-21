@@ -207,7 +207,7 @@ mouseintr(uint tick)
 	}
 
 
-	int MsgType = MSG_NONE;
+	int MsgType = MSG_MOVE;
 	switch (event) {
 		case LEFT_CLICK:
 			MsgType = MSG_LPRESS;

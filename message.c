@@ -94,8 +94,10 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 {
     int x = pos_x;
     int y = pos_y;
-    if(msg_type != 0) cprintf("msg type: %d\n", msg_type);
-
+    //if(msg_type != 0) cprintf("msg type: %d\n", msg_type);
+    if(msg_type == MSG_LPRESS || msg_type == MSG_RPRESS || msg_type == MSG_DOUBLECLICK 
+        || msg_type == MSG_KEYDOWN || msg_type == MSG_DRAG) 
+        cprintf("msg type: %d\n", msg_type);
 	int pid;
     int msg_index;
 	if(msg_type == MSG_KEYDOWN)//键盘事件
