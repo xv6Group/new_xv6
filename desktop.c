@@ -7,82 +7,20 @@
 #include "message.h"
 #include "clickable.h"
 
-void executeShell(Point point);
+ICON iconlist[] = {
+    //{"music.bmp", 175, 400},
+    {"gamecenter.bmp", 300, 400}
+    //{"notes.bmp", 425, 400},
+    //{"setting.bmp", 550, 400}
+};
 
-int main(int argc, char *argv[])
+int shellinit(Point point)
 {
-    //PICNODE pic1, pic2, pic3, pic4;
-    int windowId;
-    int result;
-    int pid;//, wpid;
-    int winid;
-    struct Msg msg;
-    short isRun = 1;
-    short isInit = 1;
-    struct Context context;
-    ClickableManager manager;
+    int pid;
+    char* shell_argv[] = { "shell", 0 };
 
-    winid = init_context(&context, 800, 600);
-    manager = initClickManager(context);
-    fill_rect(context, 0, 0, context.width, context.height, 0xffff);
-    puts_str(context, "desktop: welcome", 0x0, 0, 0);
-//    loadBitmap(&pic1, "music.bmp");
-//    loadBitmap(&pic2, "gamecenter.bmp");
-//    loadBitmap(&pic3, "notes.bmp");
-//    loadBitmap(&pic4, "setting.bmp");
-//    draw_picture(context, pic1, 175, 400);
-//    draw_picture(context, pic2, 300, 400);
-//    draw_picture(context, pic3, 425, 400);
-//    draw_picture(context, pic4, 550, 400);
-    createClickable(&manager, initRect(175, 400, 75, 75), MSG_DOUBLECLICK, executeShell);
-    while(isRun)
-    {
-        getMsg(&msg);
-        switch(msg.msg_type)
-        {
-            case MSG_UPDATE:
-                updateWindow(winid, context.addr);
-                printf(0, "desktop");
-                if (isInit)
-                {
-                    printf(1, "init shell: starting shell\n");
-                    pid = fork();
-                    if(pid < 0){
-                        printf(1, "init shell: fork failed\n");
-                        exit();
-                    }
-                    if(pid == 0){
-                        exec("finder", argv);
-                        printf(1, "init shell: exec shell failed\n");
-                        exit();
-                    }
-                    isInit = 0;
-                }
-                break;
-            case MSG_DOUBLECLICK:
-                //executeHandler(manager.double_click, initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y));
-            default:
-                break;
-        }
-    }
-
-    windowId = createWindow(0, 0, 800, 600);
-    printf(0, "windowId: %d\n", windowId);
-
-
-    result = updateWindow(windowId, context.addr);
-    printf(0, "updateResult: %d\n", result);
-
-    //while(1);
-    free_context(&context, winid);
-    exit();
-}
-
-void executeShell(Point point)
-{
-    char* argv[] = {};
     printf(1, "init shell: starting shell\n");
-    int pid = fork();
+    pid = fork();
     if (pid < 0)
     {
         printf(1, "init shell: fork failed\n");
@@ -90,8 +28,102 @@ void executeShell(Point point)
     }
     if (pid == 0) 
     {
-        exec("finder", argv);
+        exec("shell", shell_argv);
         printf(1, "init shell: exec shell failed\n");
         exit();
     }
+    return pid;
 }
+
+int finderinit(Point point)
+{
+    int pid;
+    char* finder_argv[] = { "finder", 0 };
+
+    printf(1, "init finder: starting finder\n");
+    pid = fork();
+    if (pid < 0)
+    {
+        printf(1, "init finder: fork failed\n");
+        exit();
+    }
+    if (pid == 0)
+    {
+        exec("finder", finder_argv);
+        printf(1, "init finder: exec finder failed\n");
+        exit();
+    }
+    return pid;
+}
+
+int main(int argc, char *argv[])
+{
+    int winid;
+    struct Msg msg;
+    struct Context context;
+    //int shell_pid;
+    //int finder_pid;
+    short isRun = 1;
+    short isInit = 1;
+    ClickableManager manager;
+
+    winid = init_context(&context, 800, 600);
+    fill_rect(context, 0, 0, context.width, context.height, 0xffff);
+    puts_str(context, "desktop: welcome", 0x0, 0, 0);
+
+    //PICNODE pic1, pic2, pic3, pic4;
+    //loadBitmap(&pic1, "music.bmp");
+    //loadBitmap(&pic2, "gamecenter.bmp");
+    //loadBitmap(&pic3, "notes.bmp");
+    //loadBitmap(&pic4, "setting.bmp");
+    //draw_picture(context, pic1, 175, 400);
+    //draw_picture(context, pic2, 300, 400);
+    //draw_picture(context, pic3, 425, 400);
+    //draw_picture(context, pic4, 550, 400);
+    draw_iconlist(context, iconlist, sizeof(iconlist) / sizeof(ICON));
+
+    manager = initClickManager(context);
+    //createClickable(&manager, initRect(175, 400, 75, 75), MSG_DOUBLECLICK, executeShell);
+
+    while(isRun)
+    {
+        getMsg(&msg);
+        switch(msg.msg_type)
+        {
+            case MSG_UPDATE:
+                updateWindow(winid, context.addr);
+                //printf(0, "desktop");
+                if (isInit)
+                {
+                    //finder_pid = finderinit((Point){0, 0});
+                    //finderinit((Point){0, 0});
+                    //shell_pid = shellinit((Point){context.width / 2, context.height / 2});
+                    shellinit((Point){context.width / 2, context.height / 2});
+                    isInit = 0;
+                }
+                break;
+            case MSG_PARTIAL_UPDATE:
+                updatePartialWindow(winid, context.addr, msg.concrete_msg.msg_partial_update.x1, msg.concrete_msg.msg_partial_update.y1, msg.concrete_msg.msg_partial_update.x2, msg.concrete_msg.msg_partial_update.y2);
+                break;
+            case MSG_DOUBLECLICK:
+                executeHandler(manager.double_click, initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y));
+                break;
+            default:
+                break;
+        }
+    }
+
+    //int windowId;
+    //int result;
+
+    //windowId = createWindow(0, 0, 800, 600);
+    //printf(0, "windowId: %d\n", windowId);
+
+
+    //result = updateWindow(windowId, context.addr);
+    //printf(0, "updateResult: %d\n", result);
+
+    free_context(&context, winid);
+    exit();
+}
+

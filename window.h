@@ -9,6 +9,9 @@
 //size of mouse
 #define SIZE_X_MOUSE 10
 #define SIZE_Y_MOUSE 15
+
+#define MIN(x, y) (x < y ? x : y)
+#define MAX(x, y) (x > y ? x : y)
 typedef unsigned short color16;
 
 typedef struct Rect

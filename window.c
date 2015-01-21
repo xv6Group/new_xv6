@@ -12,8 +12,12 @@ Window window_array[MAXWINDOW];
 int next_window_id = 1;
 
 //static color16* vesa_array = (color16*)VESA_ADDR;
-color16* vesa_array;
+static color16* vesa_array;
+static color16 vesa_buffer[480000];
 
+
+static int mouseX = -1;
+static int mouseY = -1;
 void drawScreen();
 
 void windowlistinit()
@@ -157,9 +161,12 @@ void drawWindow(WindowLink pWindow, color16* context)
 */
     for (j = y1; j < y2; j++)
         for (i = x1; i < x2; i++)
-            vesa_array[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
+        	vesa_buffer[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
+        	//vesa_array[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
     if (pWindow->next_window != 0)
         createUpdateMsg(pWindow->next_window->pid);
+    else
+    	memmove(vesa_array, vesa_buffer, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(color16));
 }
 
 void drawScreen()
@@ -167,6 +174,61 @@ void drawScreen()
 	createUpdateMsg(list_head->pid);
 }
 
+void printRect(Rect rect)
+{
+	cprintf("partial x1: %d, y1: %d, x2: %d, y2: %d", rect.left_x, rect.left_y, rect.right_x, rect.right_y);
+}
+
+void drawArea(WindowLink pWindow, color16* context, int x1, int y1, int x2, int y2)
+{
+	Rect area;
+	Rect dest;
+	int i, j;
+	Rect clientRect = pWindow->window_position;
+	area.left_x = x1;
+	area.left_y = y1;
+	area.right_x = x2;
+	area.right_y = y2;
+	dest = getIntersection(area, pWindow->window_position);
+	printRect(dest);
+	for (j = dest.left_y; j < dest.right_y; j++)
+		for (i = dest.left_x; i < dest.right_x; i++)
+        	vesa_buffer[j * SCREEN_WIDTH + i] = context[(j - clientRect.left_y) * (clientRect.right_x - clientRect.left_x) + i - clientRect.left_x];
+   	if (pWindow->next_window != 0)
+   		createPartialUpdateMsg(pWindow->next_window->pid, x1, y1, x2, y2);
+   	else
+   	{
+   		for (j = y1; j < y2; j++)
+   			for (i = x1; i < x2; i++)
+   				vesa_array[j * SCREEN_WIDTH + i] = vesa_buffer[j * SCREEN_WIDTH + i];
+   		drawMouse(mouseX, mouseY);
+   	}
+}
+
+void drawScreenArea(int x1, int y1, int x2, int y2)
+{
+	createPartialUpdateMsg(list_head->pid, x1, y1, x2, y2);
+}
+
+Rect getIntersection(Rect a, Rect b)
+{
+	Rect rect;
+	rect.left_x = MAX(a.left_x, b.left_x);
+	rect.right_x = MIN(a.right_x, b.right_x);
+	rect.left_y = MAX(a.left_y, b.left_y);
+	rect.right_y = MIN(a.right_y, b.right_y);
+	return rect;
+}
+
+Rect getUnion(Rect a, Rect b)
+{
+	Rect rect;
+	rect.left_x = MIN(a.left_x, b.left_x);
+	rect.right_x = MAX(a.right_x, b.right_x);
+	rect.left_y = MIN(a.left_y, b.left_y);
+	rect.right_y = MAX(a.right_y, b.right_y);
+	return rect;
+}
 
 static color16 mouse[10][15] = {
 	{65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 2016, 2016, 2016},
@@ -181,12 +243,11 @@ static color16 mouse[10][15] = {
 	{2016, 2016, 2016, 2016, 2016, 2016, 2016, 65535, 65535, 2016, 2016, 2016, 2016, 2016, 2016}
 };
 
-static color16 mouseBuffer[10][15];
+//static color16 mouseBuffer[10][15];
 
-static int mouseX = -1;
-static int mouseY = -1;
-static int drawingMouse = 0;
-void drawMouse(int newX, int newY)
+//static int drawingMouse = 0;
+
+/*void drawMouse(int newX, int newY)
 {
 	int i, j;
 	//cprintf("x: %d, y: %d\n", newX, newY);
@@ -214,4 +275,26 @@ void drawMouse(int newX, int newY)
 				vesa_array[(j + mouseY) * SCREEN_WIDTH + i + mouseX] = mouse[i][j];
 		}
 	drawingMouse = 0;
+}
+*/
+
+void drawMouse(int x, int y)
+{
+	int i, j;
+	if (mouseX >= 0)
+	{
+		for (i = 0; i < 10; i++)
+			for (j = 0; j < 15; j++)
+			{
+				vesa_array[(j + mouseY) * SCREEN_WIDTH + i + mouseX] = vesa_buffer[(j + mouseY) * SCREEN_WIDTH + i + mouseX];
+			}
+	}
+	mouseX = x;
+	mouseY = y;
+	for (i = 0; i < 10; i++)
+		for (j = 0; j < 15; j++)
+		{
+			if (mouse[i][j] != 2016)
+				vesa_array[(j + mouseY) * SCREEN_WIDTH + i + mouseX] = mouse[i][j];
+		}
 }

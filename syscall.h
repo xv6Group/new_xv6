@@ -24,3 +24,4 @@
 #define SYS_createWindow 23
 #define SYS_destroyWindow 24
 #define SYS_updateWindow 25
+#define SYS_updatePartialWindow 26
