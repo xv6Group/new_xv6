@@ -103,13 +103,9 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	if(msg_type == MSG_KEYDOWN)//键盘事件
 	{
 		pid = getActivated()->pid;
-        //cprintf("key pressed!  pid:%d\n", pid);
-<<<<<<< HEAD
-=======
         msg_index = requireMsg(msg_type, x, y, key);
 	    if (msg_index == -1) return;
         dispatch(pid, msg_index);
->>>>>>> b6753286a5745be6499b00ee982f58b7332dbb1c
 	}
 	else//鼠标事件
 	{
@@ -130,15 +126,6 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	        if (msg_index == -1) return;
             dispatch(pid, msg_index);
         }
-<<<<<<< HEAD
-
-        int relative_x = pos_x - win_ptr->window_position.left_x;
-        int relative_y = pos_y - win_ptr->window_position.left_y;
-        //cprintf("relative x: %d\n", relative_x);
-        //cprintf("relative y: %d\n", relative_y);
-        MsgQueue[msg_index].concrete_msg.msg_mouse.x = relative_x;
-        MsgQueue[msg_index].concrete_msg.msg_mouse.y = relative_y;
-=======
         
         if(msg_type == MSG_DRAG)
         {
@@ -168,7 +155,6 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
         
         mouse_x = pos_x;
         mouse_y = pos_y;
->>>>>>> b6753286a5745be6499b00ee982f58b7332dbb1c
 		drawMouse(pos_x, pos_y);
 	}
 }

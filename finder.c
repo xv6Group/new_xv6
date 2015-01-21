@@ -13,21 +13,45 @@
 #define ICON_WIDTH 32
 #define ICON_STYLE 1
 #define LIST_STYLE 2
-struct Context context;
-char* fmtname(char *path);
-void list(char *path);
-void addEvent(char *name, short type);
-void drawItem(char *name, short type);
 
+struct Context context;
+
+// 文件项
 struct fileItem{
 	short type;
 	char *name;
 	Rect pos;
 	struct fileItem *next;
 };
-
+// 文件项列表，用于保存当前目录下所有文件
 struct fileItem *fileItemList;
+void addFileItem(short type, char *name, Rect pos);
+void freeFileItemList();
 
+// 根据文件目录获取当前目录下所有文件项信息的函数
+char* fmtname(char *path);
+void list(char *path);
+
+// 绘图函数
+void drawItem(Context context, char *name, short type);
+void drawFinderWnd(Context context);
+void drawFinderContent(Context context);
+Rect getPos(int n);//根据文件序号，计算文件所在位置。
+int style = 1; //绘制风格
+
+// 事件处理函数
+void addEvent(char *name, short type);
+struct fileItem getFileItem(Point p); //跟据点击位置，获取文件信息
+
+// Handlers
+void enterDir(Point p);
+void newFile(Point p);
+void newFolder(Point p);
+void deleteFile(Point p);
+void chooseFile(Point p);
+
+
+// 文件项列表相关操作
 void addFileItem(short type, char *name, Rect pos){
 
 }
@@ -36,135 +60,8 @@ void freeFileItemList(){
 
 }
 
-void drawFinderWnd(Context context) {
-	PICNODE close, folder, vm1, vm2, createfolder, createfile, up;
-	fill_rect(context, 0, 0, context.width, context.height, 0xFFFF);
 
-	draw_line(context, 0, 0, context.width - 1, 0, BORDERLINE_COLOR);
-	draw_line(context, context.width - 1, 0, context.width - 1, context.height - 1, BORDERLINE_COLOR);
-	draw_line(context, context.width - 1, context.height - 1, 0, context.height - 1, BORDERLINE_COLOR);
-	draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
-	fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, TOOLSBAR_COLOR);
-
-	loadBitmap(&close, "close.bmp");
-	draw_picture(context, close, 3, 3);
-
-	loadBitmap(&folder, "foldericon.bmp");
-	draw_picture(context, folder, context.width / 2 - 20, 3);
-	puts_str(context, "Finder", 0x0, context.width / 2 + 2, 3);
-
-	loadBitmap(&vm2, "viewingmode2.bmp");
-	draw_picture(context, vm2, context.width - (ICON_WIDTH + 3), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
-
-	loadBitmap(&vm1, "viewingmode1.bmp");
-	draw_picture(context, vm1, context.width - (2 * ICON_WIDTH + 4), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
-
-	loadBitmap(&createfolder, "createfolder.bmp");
-	draw_picture(context, createfolder, 3, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
-
-	loadBitmap(&createfile, "createfile.bmp");
-	draw_picture(context, createfile, (ICON_WIDTH + 4), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
-
-	freepic(&close);
-	freepic(&folder);
-	freepic(&vm1);
-	freepic(&vm2);
-	freepic(&createfolder);
-	freepic(&createfile);
-	freepic(&up);
-}
-
-void drawFinderContent(Context context)
-{
-
-}
-
-int main(int argc, char *argv[]) {
-
-	int winid;
-	struct Msg msg;
-	int isRun = 1;
-	Point p;
-
-	ClickableManager cm;
-	winid = init_context(&context, 400, 300);
-	cm = initClickManager(context);
-
-	drawFinderWnd(context);
-	drawFinderContent(context);
-
-	while (isRun) {
-		getMsg(&msg);
-		switch (msg.msg_type) {
-		case MSG_DOUBLECLICK:
-			p = initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y);
-			executeHandler(cm.double_click, p);
-			drawFinderContent(context);
-			updateWindow(winid, context.addr);
-			break;
-		case MSG_UPDATE:
-			drawFinderWnd(context);
-			drawFinderContent(context);
-			updateWindow(winid, context.addr);
-			break;
-		case MSG_LPRESS:
-			p = initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y);
-			executeHandler(cm.left_click, p);
-			drawFinderContent(context);
-			updateWindow(winid, context.addr);
-			break;
-		case MSG_RPRESS:
-			p = initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y);
-			executeHandler(cm.right_click, p);
-			drawFinderContent(context);
-			updateWindow(winid, context.addr);
-			break;
-		default:
-			break;
-		}
-	}
-	free_context(&context, winid);
-	exit();
-}
-
-void enterDir(Point p)
-{
-
-}
-
-void newFile(Point p)
-{
-
-}
-
-void newFolder(Point p)
-{
-
-}
-
-void deleteFile(Point p)
-{
-
-}
-
-void chooseFile(Point p)
-{
-
-}
-
-Rect getPos(int n)
-{
-	return initRect(0, 0, 10, 10);
-
-}
-
-char * getFolderName(Point p)
-{
-	char *temp = 0;
-	return temp;
-}
-
-int style = 1;
+// 文件信息相关操作
 char* fmtname(char *path)
 {
   static char buf[DIRSIZ+1];
@@ -237,14 +134,152 @@ void list(char *path)
   close(fd);
 }
 
+
+// 绘图函数相关操作
+void drawItem(Context context, char *name, short type)
+{
+
+}
+
+void drawFinderWnd(Context context) {
+	PICNODE close, folder, vm1, vm2, createfolder, createfile, up;
+	fill_rect(context, 0, 0, context.width, context.height, 0xFFFF);
+
+	draw_line(context, 0, 0, context.width - 1, 0, BORDERLINE_COLOR);
+	draw_line(context, context.width - 1, 0, context.width - 1, context.height - 1, BORDERLINE_COLOR);
+	draw_line(context, context.width - 1, context.height - 1, 0, context.height - 1, BORDERLINE_COLOR);
+	draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
+	fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, TOOLSBAR_COLOR);
+
+	loadBitmap(&close, "close.bmp");
+	draw_picture(context, close, 3, 3);
+
+	loadBitmap(&folder, "foldericon.bmp");
+	draw_picture(context, folder, context.width / 2 - 20, 3);
+	puts_str(context, "Finder", 0x0, context.width / 2 + 2, 3);
+
+	loadBitmap(&vm2, "viewingmode2.bmp");
+	draw_picture(context, vm2, context.width - (ICON_WIDTH + 3), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
+
+	loadBitmap(&vm1, "viewingmode1.bmp");
+	draw_picture(context, vm1, context.width - (2 * ICON_WIDTH + 4), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
+
+	loadBitmap(&createfolder, "createfolder.bmp");
+	draw_picture(context, createfolder, 3, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
+
+	loadBitmap(&createfile, "createfile.bmp");
+	draw_picture(context, createfile, (ICON_WIDTH + 4), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
+
+	freepic(&close);
+	freepic(&folder);
+	freepic(&vm1);
+	freepic(&vm2);
+	freepic(&createfolder);
+	freepic(&createfile);
+	freepic(&up);
+}
+
+void drawFinderContent(Context context)
+{
+
+}
+
+Rect getPos(int n)
+{
+	return initRect(0, 0, 10, 10);
+}
+
+
+// 事件处理相关操作
 void addEvent(char *name, short type)
 {
 
 }
 
-void drawItem(char *name, short type)
+struct fileItem getFileItem(Point p)
+{
+	struct fileItem temp;
+	return temp;
+}
+
+
+// Handlers
+void enterDir(Point p)
 {
 
 }
+
+void newFile(Point p)
+{
+
+}
+
+void newFolder(Point p)
+{
+
+}
+
+void deleteFile(Point p)
+{
+
+}
+
+void chooseFile(Point p)
+{
+
+}
+
+
+int main(int argc, char *argv[]) {
+
+	int winid;
+	struct Msg msg;
+	int isRun = 1;
+	Point p;
+
+	ClickableManager cm;
+	winid = init_context(&context, 400, 300);
+	cm = initClickManager(context);
+
+	drawFinderWnd(context);
+	drawFinderContent(context);
+
+	while (isRun) {
+		getMsg(&msg);
+		switch (msg.msg_type) {
+		case MSG_DOUBLECLICK:
+			p = initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y);
+			executeHandler(cm.double_click, p);
+			drawFinderContent(context);
+			updateWindow(winid, context.addr);
+			break;
+		case MSG_UPDATE:
+			drawFinderWnd(context);
+			drawFinderContent(context);
+			updateWindow(winid, context.addr);
+			break;
+		case MSG_LPRESS:
+			p = initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y);
+			executeHandler(cm.left_click, p);
+			drawFinderContent(context);
+			updateWindow(winid, context.addr);
+			break;
+		case MSG_RPRESS:
+			p = initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y);
+			executeHandler(cm.right_click, p);
+			drawFinderContent(context);
+			updateWindow(winid, context.addr);
+			break;
+		default:
+			break;
+		}
+	}
+	free_context(&context, winid);
+	exit();
+}
+
+
+
+
 
 
