@@ -28,6 +28,7 @@ int getMsg(struct Msg*);
 int createWindow(int, int, int, int);
 int destroyWindow(int);
 int updateWindow(int, unsigned short*);
+int updatePartialWindow(int, unsigned short*, int, int, int, int);
 
 // ulib.c
 int stat(char*, struct stat*);

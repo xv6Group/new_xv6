@@ -7,6 +7,7 @@
 #define MSG_DRAG 5
 #define MSG_KEYDOWN 6
 #define MSG_UPDATE 7
+#define MSG_PARTIAL_UPDATE 8
 #define MAX_PROCESS_NUMBER 20
 #define MAX_QUEUE_LENGTH 100
 
@@ -23,6 +24,14 @@ typedef struct MsgKey
 	char key;
 } MsgKey;
 
+typedef struct MsgPartialUpdate 
+{
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+} MsgPartialUpdate;
+
 typedef struct Msg
 {
 	int msg_type;
@@ -30,6 +39,7 @@ typedef struct Msg
 	{
 		struct MsgMouse msg_mouse;
 		struct MsgKey msg_key;
+        struct MsgPartialUpdate msg_partial_update;
 	} concrete_msg;
 	int next_msg;//下一个消息在全局消息队列中的索引
 } Msg;
@@ -45,3 +55,4 @@ extern void createMsg(int msg_type, int pos_x, int pos_y, char key);
 extern void msgqueueinit();
 extern void msgtableinit();
 extern void createUpdateMsg(int pid);
+extern void createPartialUpdateMsg(int pid, int x1, int y1, int x2, int y2);

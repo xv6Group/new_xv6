@@ -102,6 +102,7 @@ extern int sys_getMsg(void);
 extern int sys_createWindow(void);
 extern int sys_destroyWindow(void);
 extern int sys_updateWindow(void);
+extern int sys_updatePartialWindow(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -129,6 +130,7 @@ static int (*syscalls[])(void) = {
 [SYS_createWindow] sys_createWindow,
 [SYS_destroyWindow] sys_destroyWindow,
 [SYS_updateWindow] sys_updateWindow,
+[SYS_updatePartialWindow] sys_updatePartialWindow,
 };
 
 void

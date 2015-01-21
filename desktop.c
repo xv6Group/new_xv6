@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     //int finder_pid;
     short isRun = 1;
     short isInit = 1;
-    //ClickableManager manager;
+    ClickableManager manager;
 
     winid = init_context(&context, 800, 600);
     fill_rect(context, 0, 0, context.width, context.height, 0xffff);
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     //draw_picture(context, pic4, 550, 400);
     draw_iconlist(context, iconlist, sizeof(iconlist) / sizeof(ICON));
 
-    //manager = initClickManager(context);
+    manager = initClickManager(context);
     //createClickable(&manager, initRect(175, 400, 75, 75), MSG_DOUBLECLICK, executeShell);
 
     while(isRun)
@@ -102,8 +102,12 @@ int main(int argc, char *argv[])
                     isInit = 0;
                 }
                 break;
+            case MSG_PARTIAL_UPDATE:
+                updatePartialWindow(winid, context.addr, msg.concrete_msg.msg_partial_update.x1, msg.concrete_msg.msg_partial_update.y1, msg.concrete_msg.msg_partial_update.x2, msg.concrete_msg.msg_partial_update.y2);
+                break;
             case MSG_DOUBLECLICK:
-                //executeHandler(manager.double_click, initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y));
+                executeHandler(manager.double_click, initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y));
+                break;
             default:
                 break;
         }

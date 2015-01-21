@@ -59,6 +59,24 @@ int requireMsg(int msg_type, int pos_x, int pos_y, char key)
 	return -1;
 }
 
+int requirePartialUpdateMsg(int x1, int y1, int x2, int y2)
+{
+    int i;
+    for(i = 0; i < MAX_QUEUE_LENGTH; i++)
+    {
+        if(MsgQueue[i].msg_type == MSG_UNUSED)
+        {
+            MsgQueue[i].msg_type = MSG_PARTIAL_UPDATE;
+            MsgQueue[i].concrete_msg.msg_partial_update.x1 = x1;
+            MsgQueue[i].concrete_msg.msg_partial_update.y1 = y1;
+            MsgQueue[i].concrete_msg.msg_partial_update.x2 = x2;
+            MsgQueue[i].concrete_msg.msg_partial_update.y2 = y2;
+            return i;
+        }
+    }
+    return -1;
+}
+
 //将msg加入MsgTable中对应的pid项
 void dispatch(int pid, int msg_index)
 {
@@ -129,28 +147,47 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
         
         if(msg_type == MSG_DRAG)
         {
+        	if(win_ptr->prior_window == 0)//desktop
+             	return;
             setActivated(win_ptr);
             int dx = pos_x - mouse_x;
             int dy = pos_y - mouse_y;
+            
+            int win_left_x = win_ptr->window_position.left_x;
+            int win_left_y = win_ptr->window_position.left_y;
+            int win_right_x = win_ptr->window_position.right_x;
+            int win_right_y = win_ptr->window_position.right_y;
+
+            int x1 = (dx > 0) ? win_left_x : (win_left_x + dx);
+            int y1 = (dy > 0) ? win_left_y : (win_left_y + dy);
+            int x2 = (dx > 0) ? (win_right_x + dx) : win_right_x;
+            int y2 = (dy > 0) ? (win_right_y + dy) : win_right_y;
+
             if( (dx > -10 && dx < 10)|| (dy > -10 && dy < 10))
             {
                 cprintf("one tiny drag!\n");
                 return;
             }
-            if(win_ptr->window_position.left_x + dx >= 0
-                && win_ptr->window_position.left_y + dy >= 0
-                && win_ptr->window_position.right_x + dx < SCREEN_WIDTH
-                && win_ptr->window_position.right_y +dy < SCREEN_HEIGHT)//判断合法位移
+            if(win_left_x + dx >= 0 && win_left_y + dy >= 0
+                && win_right_x + dx < SCREEN_WIDTH 
+                && win_right_y +dy < SCREEN_HEIGHT)//判断合法位移
             {
                 win_ptr->window_position.left_x += dx;           
                 win_ptr->window_position.left_y += dy;
                 win_ptr->window_position.right_x += dx;
                 win_ptr->window_position.right_y += dy;
             }
+            else
+            {
+                x1 = win_left_x;
+                y1 = win_left_y;
+                x2 = win_right_x;
+                y2 = win_right_y;
+            }
             msg_index = requireMsg(msg_type, x, y, key);
 	        if (msg_index == -1) return;
-            dispatch(pid, msg_index);
-            drawScreen();
+            //dispatch(pid, msg_index);
+            drawScreenArea(x1, y1, x2, y2);
         }
         
         mouse_x = pos_x;
@@ -163,6 +200,14 @@ void createUpdateMsg(int pid)
 {
 	int msg_index = requireMsg(MSG_UPDATE, 0, 0, ' ');
 	if (msg_index == -1) return;
+	
+	dispatch(pid, msg_index);
+}
+
+void createPartialUpdateMsg(int pid, int x1, int y1, int x2, int y2)
+{
+    int msg_index = requirePartialUpdateMsg(x1, y1, x2, y2);
+    if (msg_index == -1) return;
 	
 	dispatch(pid, msg_index);
 }
