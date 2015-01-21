@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
                         exit();
                     }
                     if(pid == 0){
-                        exec("shell", argv);
+                        exec("finder", argv);
                         printf(1, "init shell: exec shell failed\n");
                         exit();
                     }
