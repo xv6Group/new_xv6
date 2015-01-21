@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     //draw_picture(context, pic2, 300, 400);
     //draw_picture(context, pic3, 425, 400);
     //draw_picture(context, pic4, 550, 400);
-    draw_iconlist(context, iconlist, sizeof(iconlist) / sizeof(ICON));
+    //draw_iconlist(context, iconlist, sizeof(iconlist) / sizeof(ICON));
 
     manager = initClickManager(context);
     //createClickable(&manager, initRect(175, 400, 75, 75), MSG_DOUBLECLICK, executeShell);
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
                 //printf(0, "desktop");
                 if (isInit)
                 {
-                    //finder_pid = finderinit((Point){0, 0});
+                    finderinit((Point){0, 0});
                     //finderinit((Point){0, 0});
                     //shell_pid = shellinit((Point){context.width / 2, context.height / 2});
                     shellinit((Point){context.width / 2, context.height / 2});

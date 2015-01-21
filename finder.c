@@ -200,9 +200,16 @@ void drawItem(Context context, char *name, short type, int n)
     }
 }
     
+struct Icon iconlist[] = {
+    {"close.bmp", 3, 3},
+    {"foldericon.bmp", 380, 3},
+    {"viewingmode2.bmp", 400 - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"viewingmode1.bmp", 400 - (2 * BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+	{"createfolder.bmp", 5, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+	{"createfile.bmp", (BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)}
+};
 
 void drawFinderWnd(Context context) {
-    PICNODE close, folder, vm1, vm2, createfolder, createfile, up;
     fill_rect(context, 0, 0, context.width, context.height, 0xFFFF);
 
     draw_line(context, 0, 0, context.width - 1, 0, BORDERLINE_COLOR);
@@ -210,38 +217,7 @@ void drawFinderWnd(Context context) {
     draw_line(context, context.width - 1, context.height - 1, 0, context.height - 1, BORDERLINE_COLOR);
     draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
     fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, TOOLSBAR_COLOR);
-
-    loadBitmap(&close, "close.bmp");
-    draw_picture(context, close, 3, 3);
-
-    loadBitmap(&folder, "foldericon.bmp");
-    draw_picture(context, folder, context.width / 2 - 20, 3);
-    puts_str(context, "Finder", 0x0, context.width / 2 + 2, 3);
-
-    //printf(0, "loading viewingmode2.bmp\n");
-    loadBitmap(&vm2, "viewingmode2.bmp");
-    draw_picture(context, vm2, context.width - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3));
-
-    //printf(0, "loading viewingmode1.bmp\n");
-    loadBitmap(&vm1, "viewingmode1.bmp");
-    //printf(0, "loading viewingmode1.bmp complete!\n");
-    draw_picture(context, vm1, context.width - (2 * BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3));
-
-    //printf(0, "loading createfolder.bmp\n");
-    loadBitmap(&createfolder, "createfolder.bmp");
-    draw_picture(context, createfolder, 5, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3));
-
-    //printf(0, "loading createfile.bmp\n");
-    loadBitmap(&createfile, "createfile.bmp");
-    draw_picture(context, createfile, (BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3));
-
-    freepic(&close);
-    freepic(&folder);
-    freepic(&vm1);
-    freepic(&vm2);
-    freepic(&createfolder);
-    freepic(&createfile);
-    freepic(&up);
+    draw_iconlist(context, iconlist, sizeof(iconlist) / sizeof(ICON));
 }
 
 void drawFinderContent(Context context)
@@ -347,7 +323,7 @@ int main(int argc, char *argv[]) {
     ClickableManager cm;
     winid = init_context(&context, 400, 300);
     cm = initClickManager(context);
-
+    load_iconlist(iconlist, sizeof(iconlist) / sizeof(ICON));
     while (isRun) {
         getMsg(&msg);
         switch (msg.msg_type) {

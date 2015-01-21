@@ -268,13 +268,19 @@ draw_window(Context c, char *title)
 
 }
 
+void load_iconlist(ICON* iconlist, int len)
+{
+	int i;
+	for (i = 0; i < len; i++)
+	{
+	    loadBitmap(&(iconlist[i].pic), iconlist[i].name);
+	}
+}
 void draw_iconlist(Context c, ICON* iconlist, int len)
 {
     int i;
-
     for (i = 0; i < len; i++)
     {
-        loadBitmap(&(iconlist[i].pic), iconlist[i].name);
         draw_picture(c, iconlist[i].pic, iconlist[i].position_x, iconlist[i].position_y);
     }
 }
