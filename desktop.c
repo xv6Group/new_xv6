@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
                     //finder_pid = finderinit((Point){0, 0});
                     //finderinit((Point){0, 0});
                     //shell_pid = shellinit((Point){context.width / 2, context.height / 2});
-                    //shellinit((Point){context.width / 2, context.height / 2});
+                    shellinit((Point){context.width / 2, context.height / 2});
                     isInit = 0;
                 }
                 break;
