@@ -33,13 +33,14 @@ struct Context context;
 
 // 文件项
 struct fileItem{
-    struct stat st;
-    char *name;
-    Rect pos;
-    struct fileItem *next;
+	struct stat st;
+	char *name;
+	Rect pos;
+	int chosen;
+	struct fileItem *next;
 };
 // 文件项列表，用于保存当前目录下所有文件
-struct fileItem *fileItemList;
+struct fileItem *fileItemList = 0;
 void addFileItem(struct stat type, char *name, Rect pos);
 void freeFileItemList();
 
@@ -53,10 +54,11 @@ void drawFinderWnd(Context context);
 void drawFinderContent(Context context);
 Rect getPos(Context context, int n);//根据文件序号，计算文件所在位置。
 int style = 1; //绘制风格
+int itemCounter = 0; // 第几个文件
 
 // 事件处理函数
-void addEvent(char *name, short type);
-struct fileItem getFileItem(Point p); //跟据点击位置，获取文件信息
+void addItemEvent(ClickableManager *cm, struct fileItem item);
+struct fileItem * getFileItem(Point p); //跟据点击位置，获取文件信息
 
 // Handlers
 void enterDir(Point p);
@@ -67,12 +69,25 @@ void chooseFile(Point p);
 
 
 // 文件项列表相关操作
-void addFileItem(struct stat type, char *name, Rect pos){
-
+void addFileItem(struct stat st, char *name, Rect pos){
+	struct fileItem *temp = (struct fileItem *)malloc(sizeof(struct fileItem));
+	temp->name = name;
+	temp->st = st;
+	temp->pos = getPos(context, itemCounter);
+	temp->next = fileItemList;
+	fileItemList = temp;
 }
 
 void freeFileItemList(){
-
+	struct fileItem *p, *temp;
+	p = fileItemList;
+	while (p != 0)
+	{
+		temp = p;
+		p = p->next;
+		free(temp->name);
+		free(temp);
+	}
 }
 
 
@@ -95,7 +110,7 @@ char* fmtname(char *path)
   return buf;
 }
 
-int itemCounter = 0;
+
 
 void list(char *path)
 {
@@ -185,9 +200,16 @@ void drawItem(Context context, char *name, short type, int n)
     }
 }
     
+struct Icon iconlist[] = {
+    {"close.bmp", 3, 3},
+    {"foldericon.bmp", 380, 3},
+    {"viewingmode2.bmp", 400 - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"viewingmode1.bmp", 400 - (2 * BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+	{"createfolder.bmp", 5, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+	{"createfile.bmp", (BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)}
+};
 
 void drawFinderWnd(Context context) {
-    PICNODE close, folder, vm1, vm2, createfolder, createfile, up;
     fill_rect(context, 0, 0, context.width, context.height, 0xFFFF);
 
     draw_line(context, 0, 0, context.width - 1, 0, BORDERLINE_COLOR);
@@ -195,38 +217,7 @@ void drawFinderWnd(Context context) {
     draw_line(context, context.width - 1, context.height - 1, 0, context.height - 1, BORDERLINE_COLOR);
     draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
     fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, TOOLSBAR_COLOR);
-
-    loadBitmap(&close, "close.bmp");
-    draw_picture(context, close, 3, 3);
-
-    loadBitmap(&folder, "foldericon.bmp");
-    draw_picture(context, folder, context.width / 2 - 20, 3);
-    puts_str(context, "Finder", 0x0, context.width / 2 + 2, 3);
-
-    //printf(0, "loading viewingmode2.bmp\n");
-    loadBitmap(&vm2, "viewingmode2.bmp");
-    draw_picture(context, vm2, context.width - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3));
-
-    //printf(0, "loading viewingmode1.bmp\n");
-    loadBitmap(&vm1, "viewingmode1.bmp");
-    //printf(0, "loading viewingmode1.bmp complete!\n");
-    draw_picture(context, vm1, context.width - (2 * BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3));
-
-    //printf(0, "loading createfolder.bmp\n");
-    loadBitmap(&createfolder, "createfolder.bmp");
-    draw_picture(context, createfolder, 5, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3));
-
-    //printf(0, "loading createfile.bmp\n");
-    loadBitmap(&createfile, "createfile.bmp");
-    draw_picture(context, createfile, (BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3));
-
-    freepic(&close);
-    freepic(&folder);
-    freepic(&vm1);
-    freepic(&vm2);
-    freepic(&createfolder);
-    freepic(&createfile);
-    freepic(&up);
+    draw_iconlist(context, iconlist, sizeof(iconlist) / sizeof(ICON));
 }
 
 void drawFinderContent(Context context)
@@ -253,14 +244,37 @@ Rect getPos(Context context, int n)
 
 
 // 事件处理相关操作
-void addEvent(char *name, short type)
+void addItemEvent(ClickableManager *cm, struct fileItem item)
 {
-
+	switch(item.st.type)
+	{
+	case T_FILE:
+		createClickable(cm, item.pos, MSG_LPRESS, chooseFile);
+		break;
+	case T_DIR:
+		createClickable(cm, item.pos, MSG_LPRESS, chooseFile);
+		createClickable(cm, item.pos, MSG_DOUBLECLICK, enterDir);
+		break;
+	default:
+		printf(0, "unknown file type!");
+	}
 }
 
-struct fileItem getFileItem(Point p)
+void addListEvent(ClickableManager *cm)
 {
-    struct fileItem temp;
+	struct fileItem *p, *temp;
+	p = fileItemList;
+	while (p != 0)
+	{
+		temp = p;
+		p = p->next;
+		addItemEvent(cm, *temp);
+	}
+}
+
+struct fileItem * getFileItem(Point p)
+{
+    struct fileItem *temp = (struct fileItem *)malloc(sizeof(struct fileItem));
     return temp;
 }
 
@@ -268,17 +282,23 @@ struct fileItem getFileItem(Point p)
 // Handlers
 void enterDir(Point p)
 {
-
+	struct fileItem *temp = getFileItem(p);
+	if(chdir(temp->name) < 0)
+	  printf(2, "cannot cd %s\n", temp->name);
 }
 
 void newFile(Point p)
 {
-
+	int fd = open("newfile.txt", 0);
+	close(fd);
 }
 
 void newFolder(Point p)
 {
-
+	struct fileItem *temp = getFileItem(p);
+    if(mkdir(temp->name) < 0){
+      printf(2, "mkdir: %s failed to create\n", temp->name);
+    }
 }
 
 void deleteFile(Point p)
@@ -288,7 +308,8 @@ void deleteFile(Point p)
 
 void chooseFile(Point p)
 {
-
+	struct fileItem *temp = getFileItem(p);
+	temp->chosen = 1;
 }
 
 
@@ -302,7 +323,7 @@ int main(int argc, char *argv[]) {
     ClickableManager cm;
     winid = init_context(&context, 400, 300);
     cm = initClickManager(context);
-
+    load_iconlist(iconlist, sizeof(iconlist) / sizeof(ICON));
     while (isRun) {
         getMsg(&msg);
         switch (msg.msg_type) {
