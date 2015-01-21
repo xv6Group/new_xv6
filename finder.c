@@ -6,97 +6,105 @@
 #include "drawingAPI.h"
 #include "message.h"
 #include "bitmap.h"
-#include "clickable.h"
+#include "finder.h"
+#include "windowStyle.h"
 
 struct Context context;
 
-char*
-fmtname(char *path)
+int
+main(int argc, char *argv[])
 {
-  static char buf[DIRSIZ+1];
-  char *p;
 
-  // Find first character after last slash.
-  for(p=path+strlen(path); p >= path && *p != '/'; p--)
-    ;
-  p++;
+    int winid;
+    struct Msg msg;
+    int isRun = 1;
+    int i = 0;
+    int cwidth;
+    int cheight;
+    //PICNODE pic;
 
-  // Return blank-padded name.
-  if(strlen(p) >= DIRSIZ)
-    return p;
-  memmove(buf, p, strlen(p));
-  memset(buf+strlen(p), ' ', DIRSIZ-strlen(p));
-  return buf;
-}
+    winid = init_context(&context, 400, 300);
+    cwidth = context.width;
+    cheight = context.height;
 
-void
-ls(char *path)
-{
-  char buf[512], *p;
-  int fd;
-  struct dirent de;
-  struct stat st;
+    fill_rect(context, 0, 0, cwidth, cheight, 0xFFFF);
 
-  if((fd = open(path, 0)) < 0){
-    printf(2, "ls: cannot open %s\n", path);
-    return;
-  }
+//    puts_str(context, "shell: welcome", 0x0, 0, 0);
+//    draw_line(context, 0, 0, 50, 50, 0x0);
+//    loadBitmap(&pic, "9.bmp");
+//    draw_picture(context, pic, 0, 0);
 
-  if(fstat(fd, &st) < 0){
-    printf(2, "ls: cannot stat %s\n", path);
-    close(fd);
-    return;
-  }
 
-  switch(st.type){
-  case T_FILE:
-    printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
-    break;
+//    draw_window(context, "finder");
 
-  case T_DIR:
-    if(strlen(path) + 1 + DIRSIZ + 1 > sizeof buf){
-      printf(1, "ls: path too long\n");
-      break;
+    PICNODE pic;
+    draw_line(context, 0, 0, context.width - 1, 0, BORDERLINE_COLOR);
+    draw_line(context, context.width - 1, 0, context.width - 1, context.height - 1, BORDERLINE_COLOR);
+    draw_line(context, context.width - 1, context.height - 1, 0, context.height - 1, BORDERLINE_COLOR);
+    draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
+    fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, TOOLSBAR_COLOR);
+
+    loadBitmap(&pic, "close.bmp");
+    draw_picture(context, pic, 3, 3);
+    loadBitmap(&pic, "foldericon.bmp");
+    draw_picture(context, pic, cwidth / 2 - 20, 3);
+    puts_str(context, "Finder", 0x0, cwidth / 2 + 2, 3);
+
+    loadBitmap(&pic, "viewingmode1.bmp");
+    draw_picture(context, pic, cwidth - 66, TOPBAR_HEIGHT +TOOLSBAR_HEIGHT - 66);
+    loadBitmap(&pic, "viewingmode2.bmp");
+    draw_picture(context, pic, cwidth - 140, TOPBAR_HEIGHT +TOOLSBAR_HEIGHT - 66);
+
+    loadBitmap(&pic, "createfolder.bmp");
+    draw_picture(context, pic, 3, TOPBAR_HEIGHT +TOOLSBAR_HEIGHT - 66);
+
+    loadBitmap(&pic, "createfile.bmp");
+    draw_picture(context, pic, 70, TOPBAR_HEIGHT +TOOLSBAR_HEIGHT - 66);
+
+    loadBitmap(&pic, "up.bmp");
+    draw_picture(context, pic, 150, TOPBAR_HEIGHT +TOOLSBAR_HEIGHT - 66);
+
+    // loadBitmap(&pic, "cdup.bmp");
+    // draw_picture(context, pic, 10, TOPBAR_HEIGHT + 10);
+
+    // loadBitmap(&pic, "newfolder.bmp");
+    // draw_picture(context, pic, 50, TOPBAR_HEIGHT + 10);
+    // loadBitmap(&pic, "newfile.bmp");
+    // draw_picture(context, pic, 70, TOPBAR_HEIGHT + 10);
+
+    while(isRun)
+    {
+        getMsg(&msg);
+        switch(msg.msg_type)
+        {
+            case MSG_DOUBLECLICK:
+                i++;
+                puts_str(context, "shell double clicked!", 0x0, 0, 20*i);
+                updateWindow(winid, context.addr);
+                break;
+            case MSG_UPDATE:
+                updateWindow(winid, context.addr);
+                printf(0, "shell");
+                break;
+            case MSG_LPRESS:
+                i++;
+                puts_str(context, "shell clicked!", 0x0, 0, 20*i);
+                updateWindow(winid, context.addr);
+                break;
+            case MSG_KEYDOWN:
+                i++;
+                printf(0, "key pressed: %s\n", msg.concrete_msg.msg_key.key);
+                char temp[2];
+                temp[0] = msg.concrete_msg.msg_key.key;
+                temp[1] = '\0';
+                puts_str(context, temp, 0*0, 0, 20*i);
+                updateWindow(winid, context.addr);
+                break;
+            default:
+                break;
+        }
     }
-    strcpy(buf, path);
-    p = buf+strlen(buf);
-    *p++ = '/';
-    while(read(fd, &de, sizeof(de)) == sizeof(de)){
-      if(de.inum == 0)
-        continue;
-      memmove(p, de.name, DIRSIZ);
-      p[DIRSIZ] = 0;
-      if(stat(buf, &st) < 0){
-        printf(1, "ls: cannot stat %s\n", buf);
-        continue;
-      }
-      printf(1, "%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
-    }
-    break;
-  }
-  close(fd);
-}
-
-int main(int argc, char *argv[]) {
-	int winid;
-	struct Msg msg;
-	int isRun = 1;
-
-	winid = init_context(&context, 400, 300);
-	fill_rect(context, 0, 0, context.width, context.height, 0xf800);
-	draw_window(context, "finder");
-
-	while (isRun) {
-		getMsg(&msg);
-		switch (msg.msg_type) {
-		case MSG_UPDATE:
-			updateWindow(winid, context.addr);
-			break;
-		default:
-			break;
-		}
-	}
-
-	free_context(&context, winid);
-	exit();
+    
+    free_context(&context, winid);
+    exit();
 }

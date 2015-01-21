@@ -5,7 +5,6 @@
 #include "drawingAPI.h"
 #include "message.h"
 #include "bitmap.h"
-#include "clickable.h"
 
 struct Context context;
 
@@ -20,7 +19,6 @@ main(int argc, char *argv[])
     //PICNODE pic;
 
     winid = init_context(&context, 400, 300);
-    testClickable(context);
 
     fill_rect(context, 0, 0, context.width, context.height, 0xf800);
 
@@ -30,7 +28,7 @@ main(int argc, char *argv[])
 //    draw_picture(context, pic, 0, 0);
 
 
-    draw_window(context, "shell");
+    draw_window(context, "hello world");
 
     while(isRun)
     {
