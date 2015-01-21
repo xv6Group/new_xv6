@@ -219,7 +219,7 @@ void draw_picture(Context c, PICNODE pic, int x, int y)
 		{
 			rgb = pic.data[i*pic.width+j];
 			color = (unsigned short)_RGB16BIT565(rgb.rgbRed, rgb.rgbGreen, rgb.rgbBlue);
-			draw_point(c, j + y, i + x, color);
+			draw_point(c, j + x, pic.height - 1 - i + y, color);
 		}
 	}
 }
