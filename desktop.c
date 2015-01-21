@@ -11,7 +11,7 @@ void executeShell(Point point);
 
 int main(int argc, char *argv[])
 {
-    PICNODE pic1, pic2, pic3, pic4;
+    //PICNODE pic1, pic2, pic3, pic4;
     int windowId;
     int result;
     int pid;//, wpid;
@@ -26,14 +26,14 @@ int main(int argc, char *argv[])
     manager = initClickManager(context);
     fill_rect(context, 0, 0, context.width, context.height, 0xffff);
     puts_str(context, "desktop: welcome", 0x0, 0, 0);
-    loadBitmap(&pic1, "music.bmp");
-    loadBitmap(&pic2, "gamecenter.bmp");
-    loadBitmap(&pic3, "notes.bmp");
-    loadBitmap(&pic4, "setting.bmp");
-    draw_picture(context, pic1, 175, 400);
-    draw_picture(context, pic2, 300, 400);
-    draw_picture(context, pic3, 425, 400);
-    draw_picture(context, pic4, 550, 400);
+//    loadBitmap(&pic1, "music.bmp");
+//    loadBitmap(&pic2, "gamecenter.bmp");
+//    loadBitmap(&pic3, "notes.bmp");
+//    loadBitmap(&pic4, "setting.bmp");
+//    draw_picture(context, pic1, 175, 400);
+//    draw_picture(context, pic2, 300, 400);
+//    draw_picture(context, pic3, 425, 400);
+//    draw_picture(context, pic4, 550, 400);
     createClickable(&manager, initRect(175, 400, 75, 75), MSG_DOUBLECLICK, executeShell);
     while(isRun)
     {

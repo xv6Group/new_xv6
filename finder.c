@@ -123,10 +123,7 @@ void list(char *path)
         printf(1, "ls: cannot stat %s\n", buf);
         continue;
       }
-      //printf(1, "%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
       addFileItem(st, fmtname(buf), getPos(itemCounter));
-//      drawItem(fmtname(buf), st.type);
-//      addEvent(fmtname(buf), st.type);
       itemCounter ++;
     }
     break;
@@ -158,15 +155,20 @@ void drawFinderWnd(Context context) {
 	draw_picture(context, folder, context.width / 2 - 20, 3);
 	puts_str(context, "Finder", 0x0, context.width / 2 + 2, 3);
 
+	//printf(0, "loading viewingmode2.bmp\n");
 	loadBitmap(&vm2, "viewingmode2.bmp");
 	draw_picture(context, vm2, context.width - (ICON_WIDTH + 3), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
 
+	//printf(0, "loading viewingmode1.bmp\n");
 	loadBitmap(&vm1, "viewingmode1.bmp");
+	//printf(0, "loading viewingmode1.bmp complete!\n");
 	draw_picture(context, vm1, context.width - (2 * ICON_WIDTH + 4), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
 
+	//printf(0, "loading createfolder.bmp\n");
 	loadBitmap(&createfolder, "createfolder.bmp");
 	draw_picture(context, createfolder, 3, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
 
+	//printf(0, "loading createfile.bmp\n");
 	loadBitmap(&createfile, "createfile.bmp");
 	draw_picture(context, createfile, (ICON_WIDTH + 4), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (ICON_WIDTH + 3));
 
@@ -240,9 +242,6 @@ int main(int argc, char *argv[]) {
 	ClickableManager cm;
 	winid = init_context(&context, 400, 300);
 	cm = initClickManager(context);
-
-	drawFinderWnd(context);
-	drawFinderContent(context);
 
 	while (isRun) {
 		getMsg(&msg);
