@@ -50,5 +50,5 @@ typedef struct PicNode {
 } PICNODE;
 
 void loadBitmap(PICNODE *pic, char pic_name[]);
-
+void freepic(PICNODE *pic);
 #endif

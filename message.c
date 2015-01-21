@@ -98,12 +98,12 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	if(msg_type == MSG_KEYDOWN)//键盘事件
 	{
 		pid = getActivated()->pid;
-        cprintf("key pressed!  pid:%d\n", pid);
+        //cprintf("key pressed!  pid:%d\n", pid);
 	}
 	else//鼠标事件
 	{
         struct Window* win_ptr = getWindowByPoint(pos_x, pos_y);
-        cprintf("%d\n", win_ptr);
+        //cprintf("%d\n", win_ptr);
         pid = win_ptr->pid;
 
         if(msg_type == MSG_LPRESS || msg_type == MSG_RPRESS || msg_type == MSG_DOUBLECLICK)
@@ -113,8 +113,8 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 
         int relative_x = pos_x - win_ptr->window_position.left_x;
         int relative_y = pos_y - win_ptr->window_position.left_y;
-        cprintf("relative x: %d\n", relative_x);
-        cprintf("relative y: %d\n", relative_y);
+        //cprintf("relative x: %d\n", relative_x);
+        //cprintf("relative y: %d\n", relative_y);
         MsgQueue[msg_index].concrete_msg.msg_mouse.x = relative_x;
         MsgQueue[msg_index].concrete_msg.msg_mouse.y = relative_y;
 		drawMouse(pos_x, pos_y);
