@@ -42,7 +42,7 @@ main(int argc, char *argv[])
                 break;
             case MSG_UPDATE:
                 updateWindow(winid, context.addr);
-                printf(0, "shell");
+                //printf(0, "shell");
                 break;
             case MSG_LPRESS:
                 i++;
@@ -57,6 +57,11 @@ main(int argc, char *argv[])
                 temp[1] = '\0';
                 puts_str(context, temp, 0*0, 0, 20*i);
                 updateWindow(winid, context.addr);
+                break;
+            case MSG_DRAG:
+                //可以根据concrete_msg.msg_mouse.x和y（两者都是相对位置）判断是否处在可拖动的位置
+                i++;
+                puts_str(context, "shell dragged!", 0x0, 0, 20*i);
                 break;
             default:
                 break;

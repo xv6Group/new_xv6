@@ -12,8 +12,13 @@ struct Msg MsgQueue[MAX_QUEUE_LENGTH];
 //系统维护的各进程消息队列列表
 struct MsgTableEntry MsgTable[MAX_PROCESS_NUMBER];
 
+int mouse_x;
+int mouse_y;
+
 void msgqueueinit()
 {
+    mouse_x = -1;
+    mouse_y = -1;
 	int i;
 	for(i = 0; i < MAX_QUEUE_LENGTH; i++)
 	{
@@ -42,10 +47,6 @@ int requireMsg(int msg_type, int pos_x, int pos_y, char key)
 			if(msg_type == MSG_KEYDOWN)
 			{
 				MsgQueue[i].concrete_msg.msg_key.key = key;
-			}
-			else if(msg_type == MSG_DRAG)
-			{
-
 			}
 			else
 			{
@@ -91,25 +92,45 @@ void dispatch(int pid, int msg_index)
 //创建一则消息，包括将其加入MsgTable和MsgQueue中
 void createMsg(int msg_type, int pos_x, int pos_y, char key)
 {
-	int msg_index = requireMsg(msg_type, pos_x, pos_y, key);
-	if (msg_index == -1) return;
-
+    int x = pos_x;
+    int y = pos_y;
+    //if(msg_type != 0) cprintf("msg type: %d\n", msg_type);
+    if(msg_type == MSG_LPRESS || msg_type == MSG_RPRESS || msg_type == MSG_DOUBLECLICK 
+        || msg_type == MSG_KEYDOWN || msg_type == MSG_DRAG) 
+        cprintf("msg type: %d\n", msg_type);
 	int pid;
+    int msg_index;
 	if(msg_type == MSG_KEYDOWN)//键盘事件
 	{
 		pid = getActivated()->pid;
         //cprintf("key pressed!  pid:%d\n", pid);
+<<<<<<< HEAD
+=======
+        msg_index = requireMsg(msg_type, x, y, key);
+	    if (msg_index == -1) return;
+        dispatch(pid, msg_index);
+>>>>>>> b6753286a5745be6499b00ee982f58b7332dbb1c
 	}
 	else//鼠标事件
 	{
+        if(mouse_x == -1) mouse_x = pos_x;
+        if(mouse_y == -1) mouse_y = pos_y;
+
         struct Window* win_ptr = getWindowByPoint(pos_x, pos_y);
         //cprintf("%d\n", win_ptr);
         pid = win_ptr->pid;
 
+        x = pos_x - win_ptr->window_position.left_x;//relative x
+        y = pos_y - win_ptr->window_position.left_y;//relative y
+
         if(msg_type == MSG_LPRESS || msg_type == MSG_RPRESS || msg_type == MSG_DOUBLECLICK)
         {
             setActivated(win_ptr);
+            msg_index = requireMsg(msg_type, x, y, key);
+	        if (msg_index == -1) return;
+            dispatch(pid, msg_index);
         }
+<<<<<<< HEAD
 
         int relative_x = pos_x - win_ptr->window_position.left_x;
         int relative_y = pos_y - win_ptr->window_position.left_y;
@@ -117,10 +138,39 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
         //cprintf("relative y: %d\n", relative_y);
         MsgQueue[msg_index].concrete_msg.msg_mouse.x = relative_x;
         MsgQueue[msg_index].concrete_msg.msg_mouse.y = relative_y;
+=======
+        
+        if(msg_type == MSG_DRAG)
+        {
+            setActivated(win_ptr);
+            int dx = pos_x - mouse_x;
+            int dy = pos_y - mouse_y;
+            if( (dx > -10 && dx < 10)|| (dy > -10 && dy < 10))
+            {
+                cprintf("one tiny drag!\n");
+                return;
+            }
+            if(win_ptr->window_position.left_x + dx >= 0
+                && win_ptr->window_position.left_y + dy >= 0
+                && win_ptr->window_position.right_x + dx < SCREEN_WIDTH
+                && win_ptr->window_position.right_y +dy < SCREEN_HEIGHT)//判断合法位移
+            {
+                win_ptr->window_position.left_x += dx;           
+                win_ptr->window_position.left_y += dy;
+                win_ptr->window_position.right_x += dx;
+                win_ptr->window_position.right_y += dy;
+            }
+            msg_index = requireMsg(msg_type, x, y, key);
+	        if (msg_index == -1) return;
+            dispatch(pid, msg_index);
+            drawScreen();
+        }
+        
+        mouse_x = pos_x;
+        mouse_y = pos_y;
+>>>>>>> b6753286a5745be6499b00ee982f58b7332dbb1c
 		drawMouse(pos_x, pos_y);
 	}
-
-	dispatch(pid, msg_index);
 }
 
 void createUpdateMsg(int pid)

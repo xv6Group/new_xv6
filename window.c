@@ -48,7 +48,7 @@ WindowLink allocWindow(int left_x, int left_y, int right_x, int right_y, int pid
 			p->next_window = 0;
             activated_window = p;
 			createUpdateMsg(p->pid);
-			cprintf("UpdateMsg created for process: %d\n", p->pid);
+			//cprintf("UpdateMsg created for process: %d\n", p->pid);
 			return p;
 		}
 	}
@@ -124,8 +124,8 @@ WindowLink getWindowById(int window_id)
 	WindowLink p = list_head;
 	while (p != 0 && p->window_id != window_id) 
 	{
-		cprintf("now: %d, target: %d\n", p->window_id, window_id);
-		cprintf("next: %d\n", p->next_window);
+		//cprintf("now: %d, target: %d\n", p->window_id, window_id);
+		//cprintf("next: %d\n", p->next_window);
 		p = p->next_window;
 	}
 	return p;
@@ -145,24 +145,26 @@ void drawWindow(WindowLink pWindow, color16* context)
 	int y1 = (pWindow->window_position).left_y;
 	int x2 = (pWindow->window_position).right_x;
 	int y2 = (pWindow->window_position).right_y;
-	cprintf("window_id: %d, x1: %d, y1: %d, x2: %d, y2: %d\n", pWindow->window_id, x1, y1, x2, y2);
-	for (i = x1; i < x2; i++)
+	//cprintf("window_id: %d, x1: %d, y1: %d, x2: %d, y2: %d\n", pWindow->window_id, x1, y1, x2, y2);
+	/*for (i = x1; i < x2; i++)
 		for (j = y1; j < y2; j++)
 		{	
-			WindowLink qWindow = list_tail;
+			//WindowLink qWindow = list_tail;
 			while (qWindow != pWindow && inClientRect(qWindow, i, j)) qWindow = qWindow->prior_window;
 			vesa_array[j * SCREEN_WIDTH + i] = qWindow == pWindow ? context[(j - y1) * (x2 - x1) + i - x1] : vesa_array[j * SCREEN_WIDTH + i];
 			//vesa_array[i*SCREEN_HEIGHT + j] = 2016;
 		}
+*/
+    for (j = y1; j < y2; j++)
+        for (i = x1; i < x2; i++)
+            vesa_array[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
+    if (pWindow->next_window != 0)
+        createUpdateMsg(pWindow->next_window->pid);
 }
 
 void drawScreen()
 {
-	WindowLink p;
-	for (p = list_head; p != 0; p = p->next_window)
-	{
-		createUpdateMsg(p->pid);
-	}
+	createUpdateMsg(list_head->pid);
 }
 
 
