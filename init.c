@@ -7,6 +7,7 @@
 
 
 char *argv[] = { "sh", 0 };
+char *desktop_argv[] = { "desktop", 0 };
 
 int
 main(void)
@@ -29,7 +30,7 @@ main(void)
       exit();
     }
     if (desktop_pid == 0) {
-      exec("desktop", argv);
+      exec("desktop", desktop_argv);
       printf(1, "init desktop: exec desktop failed\n");
       exit();
     }
