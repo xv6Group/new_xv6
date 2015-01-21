@@ -87,11 +87,13 @@ int inClientRect(WindowLink pWindow, int position_x, int position_y)
 		(pWindow->window_position).right_y > position_y ? 1 : 0;
 }
 
-void setActivated(int window_id)
+void setActivated(WindowLink p)
 {
-	WindowLink p = list_head;
-	while (p != 0 && p->window_id != window_id) p = p->next_window;
-	if (p == 0) return;
+    if(p == list_head)
+    {
+        activated_window = p;
+        return;
+    }
 
 	if (p->prior_window != 0) 
 		p->prior_window->next_window = p->next_window;
