@@ -21,21 +21,12 @@ main(int argc, char *argv[])
     int i = 0;
     int cwidth;
     int cheight;
-    //PICNODE pic;
 
     winid = init_context(&context, 400, 300);
     cwidth = context.width;
     cheight = context.height;
 
     fill_rect(context, 0, 0, cwidth, cheight, 0xFFFF);
-
-//    puts_str(context, "shell: welcome", 0x0, 0, 0);
-//    draw_line(context, 0, 0, 50, 50, 0x0);
-//    loadBitmap(&pic, "9.bmp");
-//    draw_picture(context, pic, 0, 0);
-
-
-//    draw_window(context, "finder");
 
     PICNODE pic;
     draw_line(context, 0, 0, context.width - 1, 0, BORDERLINE_COLOR);
