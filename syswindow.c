@@ -29,11 +29,11 @@ int sys_updateWindow()
 	if (argint(0, &window_id) < 0)
 		return -1;
 	pWindow = getWindowById(window_id);
-	cprintf("updateWindow called: %d\n", pWindow);
+	//cprintf("updateWindow called: %d\n", pWindow);
 	if (pWindow == 0) return -1;
 	int size = ((pWindow->window_position).right_x - (pWindow->window_position).left_x) *
 		((pWindow->window_position).right_y - (pWindow->window_position).left_y);
-	cprintf("window size: %d\n", size);
+	//cprintf("window size: %d\n", size);
 	if (size < 0) return -1;
 	if (argptr(1, (void*)&context, sizeof(color16) * size) < 0) return -1;
 	drawWindow(pWindow, context);

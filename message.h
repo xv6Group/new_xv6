@@ -23,19 +23,12 @@ typedef struct MsgKey
 	char key;
 } MsgKey;
 
-//拖动消息
-typedef struct MsgDrag
-{
-
-} MsgDrag;
-
 typedef struct Msg
 {
 	int msg_type;
 	union
 	{
 		struct MsgMouse msg_mouse;
-		struct MsgDrag msg_drag;
 		struct MsgKey msg_key;
 	} concrete_msg;
 	int next_msg;//下一个消息在全局消息队列中的索引
