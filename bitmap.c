@@ -20,7 +20,7 @@ void loadBitmap(PICNODE *pic, char pic_name[])
 		  printf(0,"cannot open %s\n", pic_name);
 		  return;
 	}
-
+	printf(0, "reading bitmap: %s\n", pic_name);
 	//pfile = fopen(strFile,"rb");//打开文件
 	BmpFileHeader=(char *)malloc(14*sizeof(char));
 
@@ -148,4 +148,9 @@ void showBmpInforHead(BITMAPINFOHEADER* pBmpInforHead)
 void showRgbQuan(RGBQUAD* pRGB)
 {
 	printf(0, "(%d,%d,%d) ",pRGB->rgbRed,pRGB->rgbGreen,pRGB->rgbBlue);
+}
+
+void freepic(PICNODE *pic)
+{
+	free(pic->data);
 }

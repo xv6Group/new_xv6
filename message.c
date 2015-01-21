@@ -121,7 +121,6 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	if(msg_type == MSG_KEYDOWN)//键盘事件
 	{
 		pid = getActivated()->pid;
-        //cprintf("key pressed!  pid:%d\n", pid);
         msg_index = requireMsg(msg_type, x, y, key);
 	    if (msg_index == -1) return;
         dispatch(pid, msg_index);
