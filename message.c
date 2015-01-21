@@ -105,6 +105,12 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
         struct Window* win_ptr = getWindowByPoint(pos_x, pos_y);
         cprintf("%d\n", win_ptr);
         pid = win_ptr->pid;
+
+        if(msg_type == MSG_LPRESS || msg_type == MSG_RPRESS || msg_type == MSG_DOUBLECLICK)
+        {
+            setActivated(win_ptr);
+        }
+
         int relative_x = pos_x - win_ptr->window_position.left_x;
         int relative_y = pos_y - win_ptr->window_position.left_y;
         cprintf("relative x: %d\n", relative_x);
