@@ -192,7 +192,7 @@ void 			windowlistinit();
 //get the current activated window
 struct Window* 	getActivated();
 
-void 			setActivated(int window_id);
+void 			setActivated(struct Window* pWindow);
 struct Window* 	allocWindow(int left_x, int left_y, int right_x, int right_y, int pid);
 int 			releaseWindow(int window_id);
 int 			inClientRect(struct Window* pWindow, int position_x, int position_y);
