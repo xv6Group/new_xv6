@@ -149,3 +149,8 @@ void showRgbQuan(RGBQUAD* pRGB)
 {
 	printf(0, "(%d,%d,%d) ",pRGB->rgbRed,pRGB->rgbGreen,pRGB->rgbBlue);
 }
+
+void freepic(PICNODE *pic)
+{
+	free(pic->data);
+}

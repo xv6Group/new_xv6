@@ -14,11 +14,11 @@ int main(int argc, char *argv[])
     PICNODE pic1, pic2, pic3, pic4;
     int windowId;
     int result;
-    //int pid;//, wpid;
+    int pid;//, wpid;
     int winid;
     struct Msg msg;
     short isRun = 1;
-    //short isInit = 1;
+    short isInit = 1;
     struct Context context;
     ClickableManager manager;
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
             case MSG_UPDATE:
                 updateWindow(winid, context.addr);
                 printf(0, "desktop");
-                /*if (isInit)
+                if (isInit)
                 {
                     printf(1, "init shell: starting shell\n");
                     pid = fork();
@@ -57,10 +57,10 @@ int main(int argc, char *argv[])
                         exit();
                     }
                     isInit = 0;
-                }*/
+                }
                 break;
             case MSG_DOUBLECLICK:
-                executeHandler(manager.double_click, initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y));
+                //executeHandler(manager.double_click, initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y));
             default:
                 break;
         }
