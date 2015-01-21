@@ -140,7 +140,7 @@ vectors.S: vectors.pl
 	perl vectors.pl > vectors.S
 
 ULIB = ulib.o usys.o printf.o umalloc.o
-GUILIB = context.o drawingAPI.o bitmap.o
+GUILIB = context.o drawingAPI.o bitmap.o clickable.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
@@ -159,6 +159,11 @@ _desktop: desktop.o $(GUILIB) $(ULIB)
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
 _shell:shell.o $(GUILIB) $(ULIB)
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
+	$(OBJDUMP) -S $@ > $*.asm
+	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
+
+_finder:finder.o $(GUILIB) $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
@@ -190,6 +195,7 @@ UPROGS=\
 	_zombie\
 	_desktop\
 	_shell\
+	_finder\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS) hankaku.txt close.bmp
