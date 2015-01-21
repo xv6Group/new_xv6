@@ -18,14 +18,14 @@ struct Context context;
 
 // 文件项
 struct fileItem{
-	short type;
+	struct stat st;
 	char *name;
 	Rect pos;
 	struct fileItem *next;
 };
 // 文件项列表，用于保存当前目录下所有文件
 struct fileItem *fileItemList;
-void addFileItem(short type, char *name, Rect pos);
+void addFileItem(struct stat type, char *name, Rect pos);
 void freeFileItemList();
 
 // 根据文件目录获取当前目录下所有文件项信息的函数
@@ -52,7 +52,7 @@ void chooseFile(Point p);
 
 
 // 文件项列表相关操作
-void addFileItem(short type, char *name, Rect pos){
+void addFileItem(struct stat type, char *name, Rect pos){
 
 }
 
@@ -124,7 +124,7 @@ void list(char *path)
         continue;
       }
       //printf(1, "%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
-      addFileItem(st.type, fmtname(buf), getPos(itemCounter));
+      addFileItem(st, fmtname(buf), getPos(itemCounter));
 //      drawItem(fmtname(buf), st.type);
 //      addEvent(fmtname(buf), st.type);
       itemCounter ++;
