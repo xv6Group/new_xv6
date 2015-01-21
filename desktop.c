@@ -59,8 +59,12 @@ int main(int argc, char *argv[])
                     isInit = 0;
                 }*/
                 break;
+            case MSG_PARTIAL_UPDATE:
+                updatePartialWindow(winid, context.addr, msg.concrete_msg.msg_partial_update.x1, msg.concrete_msg.msg_partial_update.y1, msg.concrete_msg.msg_partial_update.x2, msg.concrete_msg.msg_partial_update.y2);
+                break;
             case MSG_DOUBLECLICK:
                 executeHandler(manager.double_click, initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y));
+                break;
             default:
                 break;
         }

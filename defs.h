@@ -10,6 +10,7 @@ struct stat;
 struct superblock;
 struct Window;
 struct Msg;
+struct Rect;
 
 // bio.c
 void            binit(void);
@@ -202,6 +203,10 @@ struct Window* 	getWindowByPoint(int position_x, int position_y);
 void            drawScreen();
 void			drawWindow(struct Window*, ushort*);
 void 			drawMouse(int newX, int newY);
+void 			drawArea(struct Window*, ushort*, int, int, int, int);
+void			drawScreenArea(int, int, int, int);
+struct Rect 	getIntersection(struct Rect, struct Rect);
+struct Rect 	getUnion(struct Rect, struct Rect);
 
 //message.c
 void 			msgqueueinit();
@@ -210,6 +215,7 @@ void 			msgtableinit();
 //void			dispatch(int, int);
 void 			createMsg(int, int, int, char);
 void 			createUpdateMsg(int);
+void			createPartialUpdateMsg(int, int, int, int, int);
 //void			getMsg(int, struct Msg*);
 
 

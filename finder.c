@@ -75,7 +75,7 @@ main(int argc, char *argv[])
                 break;
             case MSG_UPDATE:
                 updateWindow(winid, context.addr);
-                printf(0, "shell");
+                //printf(0, "shell");
                 break;
             case MSG_LPRESS:
                 i++;
@@ -90,6 +90,9 @@ main(int argc, char *argv[])
                 temp[1] = '\0';
                 puts_str(context, temp, 0*0, 0, 20*i);
                 updateWindow(winid, context.addr);
+                break;
+            case MSG_PARTIAL_UPDATE:
+                updatePartialWindow(winid, context.addr, msg.concrete_msg.msg_partial_update.x1, msg.concrete_msg.msg_partial_update.y1, msg.concrete_msg.msg_partial_update.x2, msg.concrete_msg.msg_partial_update.y2);
                 break;
             default:
                 break;

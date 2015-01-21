@@ -198,7 +198,7 @@ UPROGS=\
 	_finder\
 
 fs.img: mkfs README $(UPROGS)
-	./mkfs fs.img README $(UPROGS) hankaku.txt close.bmp music.bmp setting.bmp
+	./mkfs fs.img README $(UPROGS) hankaku.txt close.bmp music.bmp
 
 -include *.d
 
