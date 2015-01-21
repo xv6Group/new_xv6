@@ -21,10 +21,11 @@ struct fileItem{
 	struct stat st;
 	char *name;
 	Rect pos;
+	int chosen;
 	struct fileItem *next;
 };
 // 文件项列表，用于保存当前目录下所有文件
-struct fileItem *fileItemList;
+struct fileItem *fileItemList = 0;
 void addFileItem(struct stat type, char *name, Rect pos);
 void freeFileItemList();
 
@@ -38,9 +39,10 @@ void drawFinderWnd(Context context);
 void drawFinderContent(Context context);
 Rect getPos(int n);//根据文件序号，计算文件所在位置。
 int style = 1; //绘制风格
+int itemCounter = 0; // 第几个文件
 
 // 事件处理函数
-void addEvent(char *name, short type);
+void addItemEvent(ClickableManager *cm, struct fileItem item);
 struct fileItem getFileItem(Point p); //跟据点击位置，获取文件信息
 
 // Handlers
@@ -52,12 +54,25 @@ void chooseFile(Point p);
 
 
 // 文件项列表相关操作
-void addFileItem(struct stat type, char *name, Rect pos){
-
+void addFileItem(struct stat st, char *name, Rect pos){
+	struct fileItem *temp = (struct fileItem *)malloc(sizeof(struct fileItem));
+	temp->name = name;
+	temp->st = st;
+	temp->pos = getPos(itemCounter);
+	temp->next = fileItemList;
+	fileItemList = temp;
 }
 
 void freeFileItemList(){
-
+	struct fileItem *p, *temp;
+	p = fileItemList;
+	while (p != 0)
+	{
+		temp = p;
+		p = p->next;
+		free(temp->name);
+		free(temp);
+	}
 }
 
 
@@ -80,7 +95,7 @@ char* fmtname(char *path)
   return buf;
 }
 
-int itemCounter = 0;
+
 
 void list(char *path)
 {
@@ -193,12 +208,35 @@ Rect getPos(int n)
 
 
 // 事件处理相关操作
-void addEvent(char *name, short type)
+void addItemEvent(ClickableManager *cm, struct fileItem item)
 {
-
+	switch(item.st.type)
+	{
+	case T_FILE:
+		createClickable(cm, item.pos, MSG_LPRESS, chooseFile);
+		break;
+	case T_DIR:
+		createClickable(cm, item.pos, MSG_LPRESS, chooseFile);
+		createClickable(cm, item.pos, MSG_DOUBLECLICK, enterDir);
+		break;
+	default:
+		printf(0, "unknown file type!");
+	}
 }
 
-struct fileItem getFileItem(Point p)
+void addListEvent(ClickableManager *cm)
+{
+	struct fileItem *p, *temp;
+	p = fileItemList;
+	while (p != 0)
+	{
+		temp = p;
+		p = p->next;
+		addItemEvent(cm, *p);
+	}
+}
+
+struct fileItem * getFileItem(Point p)
 {
 	struct fileItem temp;
 	return temp;
@@ -208,17 +246,24 @@ struct fileItem getFileItem(Point p)
 // Handlers
 void enterDir(Point p)
 {
-
+	struct fileItem *temp = getFileItem(p);
+	if(chdir(temp->name) < 0)
+	  printf(2, "cannot cd %s\n", temp->name);
 }
 
 void newFile(Point p)
 {
-
+	int fd = open("newfile.txt", 0);
+	close(fd);
 }
 
 void newFolder(Point p)
 {
-
+	struct fileItem *temp = getFileItem(p);
+    if(mkdir(temp->name) < 0){
+      printf(2, "mkdir: %s failed to create\n", temp->name);
+      break;
+    }
 }
 
 void deleteFile(Point p)
@@ -228,7 +273,8 @@ void deleteFile(Point p)
 
 void chooseFile(Point p)
 {
-
+	struct fileItem *temp = getFileItem(p);
+	temp->chosen = 1;
 }
 
 
