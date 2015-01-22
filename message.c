@@ -147,9 +147,15 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
         
         if(msg_type == MSG_DRAG)
         {
-        	if(win_ptr->prior_window == 0)//desktop
-             	return;
             setActivated(win_ptr);
+        	if(win_ptr->prior_window == 0)//desktop
+            {
+                mouse_x = pos_x;
+                mouse_y = pos_y;
+		        drawMouse(pos_x, pos_y);
+             	return;
+            }
+            
             int dx = pos_x - mouse_x;
             int dy = pos_y - mouse_y;
             
