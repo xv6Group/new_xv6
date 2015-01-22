@@ -163,14 +163,14 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
             int x2 = (dx > 0) ? (win_right_x + dx) : win_right_x;
             int y2 = (dy > 0) ? (win_right_y + dy) : win_right_y;
 
-            if( (dx > -10 && dx < 10)|| (dy > -10 && dy < 10))
+            /*if( (dx > -10 && dx < 10)|| (dy > -10 && dy < 10))
             {
                 //cprintf("one tiny drag!\n");
                 return;
-            }
+            }*/
             if(win_left_x + dx >= 0 && win_left_y + dy >= 0
                 && win_right_x + dx < SCREEN_WIDTH 
-                && win_right_y +dy < SCREEN_HEIGHT)//判断合法位移
+                && win_right_y + dy < SCREEN_HEIGHT)//判断合法位移
             {
                 win_ptr->window_position.left_x += dx;           
                 win_ptr->window_position.left_y += dy;
@@ -188,7 +188,8 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
 	        if (msg_index == -1) return;*/
             //dispatch(pid, msg_index);
             cprintf("update area: x1: %d, y1: %d, x2: %d, y2:%d.\n", x1, y1, x2, y2);
-            drawScreenArea(x1, y1, x2, y2);
+            //drawScreenArea(x1, y1, x2, y2);
+            drawScreen();
         }
         
         mouse_x = pos_x;

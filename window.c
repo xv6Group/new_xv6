@@ -161,7 +161,13 @@ void drawWindow(WindowLink pWindow, color16* context)
 */
     for (j = y1; j < y2; j++)
         for (i = x1; i < x2; i++)
-        	vesa_buffer[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
+        {
+            //WindowLink qWindow = list_tail;
+			//while (qWindow != pWindow && inClientRect(qWindow, i, j)) qWindow = qWindow->prior_window;
+            //if (qWindow == pWindow)         
+        	    vesa_buffer[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
+        }
+        	//vesa_buffer[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
         	//vesa_array[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
     if (pWindow->next_window != 0)
         createUpdateMsg(pWindow->next_window->pid);
