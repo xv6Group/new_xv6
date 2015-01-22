@@ -177,7 +177,7 @@ mouseintr(uint tick)
 			{
 				int dtick = tick - left_click_tick;
 				//cprintf("tick: %d\n", dtick);
-				if(dtick > 15)
+				if(dtick > DOUBLE_CLICK_DELAY)
 				{
 					event = LEFT_CLICK;
 					left_click_tick = tick;
@@ -185,7 +185,7 @@ mouseintr(uint tick)
 				else
 				{
 					event = DOUBLE_CLICK;
-					left_click_tick = -20;
+					left_click_tick = -DOUBLE_CLICK_DELAY;
 				}
 			}
 			left_already_down = 0;

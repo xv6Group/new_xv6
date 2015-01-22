@@ -190,6 +190,10 @@ void createMsg(int msg_type, int pos_x, int pos_y, char key)
             cprintf("update area: x1: %d, y1: %d, x2: %d, y2:%d.\n", x1, y1, x2, y2);
             //drawScreenArea(x1, y1, x2, y2);
             drawScreen();
+            mouse_x = pos_x;
+            mouse_y = pos_y;
+            setMouse(mouse_x, mouse_y);
+            return;
         }
         
         mouse_x = pos_x;
