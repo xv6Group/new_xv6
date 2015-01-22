@@ -71,23 +71,23 @@ int main(int argc, char *argv[])
     fill_rect(context, 0, 0, context.width, context.height, 0xffff);
     puts_str(context, "desktop: welcome", 0x0, 0, 0);
 //加载有点慢，先注释掉了。
-    PICNODE pic1, pic2, pic3, pic4;
-    loadBitmap(&pic1, "music.bmp");
-    loadBitmap(&pic2, "gamecenter.bmp");
-    loadBitmap(&pic3, "notes.bmp");
-    loadBitmap(&pic4, "setting.bmp");
-    set_icon_alpha(&pic1);
-    set_icon_alpha(&pic2);
-    set_icon_alpha(&pic3);
-    set_icon_alpha(&pic4);
-
-    fill_rect(context, 160, 400, 500, 150, 0x0101);
-    //loadBitmap(&background, "bg.bmp");
-    //draw_picture(context, background, 0, 0);
-    draw_picture(context, pic1, 175, 400);
-    draw_picture(context, pic2, 300, 400);
-    draw_picture(context, pic3, 425, 400);
-    draw_picture(context, pic4, 550, 400);
+    //PICNODE pic1, pic2, pic3, pic4;
+//    loadBitmap(&pic1, "music.bmp");
+//    loadBitmap(&pic2, "gamecenter.bmp");
+//    loadBitmap(&pic3, "notes.bmp");
+//    loadBitmap(&pic4, "setting.bmp");
+//    set_icon_alpha(&pic1);
+//    set_icon_alpha(&pic2);
+//    set_icon_alpha(&pic3);
+//    set_icon_alpha(&pic4);
+//
+//    fill_rect(context, 160, 400, 500, 150, 0x0101);
+//    //loadBitmap(&background, "bg.bmp");
+//    //draw_picture(context, background, 0, 0);
+//    draw_picture(context, pic1, 175, 400);
+//    draw_picture(context, pic2, 300, 400);
+//    draw_picture(context, pic3, 425, 400);
+//    draw_picture(context, pic4, 550, 400);
     //draw_iconlist(context, iconlist, sizeof(iconlist) / sizeof(ICON));
 
     manager = initClickManager(context);
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
                 //printf(0, "desktop");
                 if (isInit)
                 {
-                    //finderinit((Point){0, 0});
+                    finderinit((Point){0, 0});
                     //finderinit((Point){0, 0});
                     //shell_pid = shellinit((Point){context.width / 2, context.height / 2});
                     //shellinit((Point){context.width / 2, context.height / 2});

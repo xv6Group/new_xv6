@@ -140,8 +140,10 @@ char* fmtname(char *path) {
 	return p;
 }
 
-int containPoint(char *name) {
+int isListable(char *name, short type) {
 	char *p = name;
+	if (*p == '.') return 0;
+	if (type == T_DIR) return 1;
 	while (*p != 0) {
 		if (*p == '.')
 			return 1;
@@ -149,6 +151,7 @@ int containPoint(char *name) {
 	}
 	return 0;
 }
+
 void list(char *path) {
 	char buf[512], *p;
 	int fd;
@@ -189,7 +192,7 @@ void list(char *path) {
 				printf(1, "ls: cannot stat %s\n", buf);
 				continue;
 			}
-			if (st.type == T_DIR || containPoint(fmtname(buf))) {
+			if (isListable(fmtname(buf), st.type)) {
 				addFileItem(st, fmtname(buf), getPos(context, itemCounter));
 				itemCounter++;
 			}
@@ -305,8 +308,8 @@ void drawFinderWnd(Context context) {
 	draw_line(context, 0, 0, context.width - 1, 0, BORDERLINE_COLOR);
 	draw_line(context, context.width - 1, 0, context.width - 1,
 			context.height - 1, BORDERLINE_COLOR);
-	draw_line(context, context.width - 1, context.height - 1, 0,
-			context.height - 1, BORDERLINE_COLOR);
+	draw_line(context, 0,
+			context.height - 1, context.width - 1, context.height - 1, BORDERLINE_COLOR);
 	draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
 	fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT,
 			TOOLSBAR_COLOR);
@@ -314,14 +317,7 @@ void drawFinderWnd(Context context) {
 	//printf(0, "drawing window\n");
 	draw_iconlist(context, wndRes, sizeof(wndRes) / sizeof(ICON));
 
-	if (style == LIST_STYLE)
-	{
-		fill_rect(context, 1, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + 1, LIST_ITEM_FILENAME - 2, TAGBAR_HEIGHT, TAGBAR_COLOR);
-		fill_rect(context, LIST_ITEM_FILENAME, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + 1, LIST_ITEM_SIZE - LIST_ITEM_FILENAME - 1, TAGBAR_HEIGHT, TAGBAR_COLOR);
-		fill_rect(context, LIST_ITEM_SIZE, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + 1, context.width - LIST_ITEM_SIZE - 1, TAGBAR_HEIGHT, TAGBAR_COLOR);		
-		puts_str(context, "Name", 0, LIST_ITEM_FILENAME + 3, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + TAGBAR_HEIGHT - 18);
-		puts_str(context, "Size", 0, LIST_ITEM_SIZE + 3, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + TAGBAR_HEIGHT - 18);
-	}
+
 }
 
 void drawFinderContent(Context context) {
@@ -331,7 +327,9 @@ void drawFinderContent(Context context) {
 	int contentTop = TOPBAR_HEIGHT + TOOLSBAR_HEIGHT;
 	if (style == LIST_STYLE) contentTop += TAGBAR_HEIGHT;
 	fill_rect(context, 1, contentTop, context.width - 2,
-			context.height - (TOPBAR_HEIGHT + TOOLSBAR_HEIGHT), 0xFFFF);
+			context.height - (TOPBAR_HEIGHT + TOOLSBAR_HEIGHT) - 2, 0xFFFF);
+	draw_line(context, 0,
+				context.height - 1, context.width - 1, context.height - 1, BORDERLINE_COLOR);
 
 	//printf(0, "listing complete!\n");
 	//printItemList();
@@ -342,6 +340,36 @@ void drawFinderContent(Context context) {
 		drawItem(context, p->name, p->st, p->pos, p->chosen);
 		p = p->next;
 	}
+
+	if (style == LIST_STYLE)
+		{
+			fill_rect(context, 1, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + 1, LIST_ITEM_FILENAME - 2, TAGBAR_HEIGHT, TAGBAR_COLOR);
+			fill_rect(context, LIST_ITEM_FILENAME, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + 1, LIST_ITEM_SIZE - LIST_ITEM_FILENAME - 1, TAGBAR_HEIGHT, TAGBAR_COLOR);
+			fill_rect(context, LIST_ITEM_SIZE, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + 1, context.width - LIST_ITEM_SIZE - 1, TAGBAR_HEIGHT, TAGBAR_COLOR);
+			puts_str(context, "Name", 0, LIST_ITEM_FILENAME + 3, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + TAGBAR_HEIGHT - 18);
+			puts_str(context, "Size", 0, LIST_ITEM_SIZE + 3, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + TAGBAR_HEIGHT - 18);
+		}
+}
+
+char * int2str(int i)
+{
+	int j;
+	int n = 0;
+	char *result = (char *)malloc(4*sizeof(char));
+	char *temp = (char *)malloc(4*sizeof(char));
+	do{
+		result[n++] = (i % 10) + '0';
+		i /= 10;
+	}while (i!=0);
+	result[n] = 0;
+
+	for (j = 0; j < n; j++)
+	{
+		temp[j] = result[n-1-j];
+	}
+	temp[n] = 0;
+	free(result);
+	return temp;
 }
 
 void printItemList() {
@@ -436,30 +464,36 @@ void h_enterDir(Point p) {
 	addListEvent(&cm);
 }
 
-void cat(int fd) {
-	int n;
-	char buf[512];
-	while ((n = read(fd, buf, sizeof(buf))) > 0)
-		write(1, buf, n);
-	if (n < 0) {
-		printf(1, "cat: read error\n");
-		exit();
-	}
-}
-
 void newFile(char *name) {
 	int fd;
+	int n = strlen(name);
+	int baseLen = 8;
+	int counter;
+	while ((fd = open(name, 0)) > 0)
+	{
+		n = strlen(name);
+		if (n == baseLen)
+		{
+			counter = 1;
+		}
+		else
+		{
+			counter = atoi(&name[baseLen]);
+			counter ++;
+		}
+		strcpy(&name[baseLen], int2str(counter));
+		close(fd);
+	}
 	if ((fd = open(name, O_CREATE)) < 0) {
-		printf(1, "cat: cannot open %s\n", name);
+		printf(0, "cat: cannot open %s\n", name);
 		exit();
 	}
-	//cat(fd);
 	close(fd);
-
 }
 
 void h_newFile(Point p) {
-	newFile("newfile.txt");
+	char nf[32] = "file.txt";
+	newFile(nf);
 	freeFileItemList();
 	list(".");
 	drawFinderContent(context);
@@ -468,20 +502,39 @@ void h_newFile(Point p) {
 	addListEvent(&cm);
 }
 
-void newFolder(char *newfolder) {
-	if (mkdir(newfolder) < 0) {
-		printf(0, "mkdir: %s failed to create\n", newfolder);
+void newFolder(char *name) {
+//	int fd;
+//	int n = strlen(newfolder);
+	int n = strlen(name);
+	int baseLen = 9;
+	int counter;
+	while (mkdir(name) < 0) {
+		n = strlen(name);
+		if (n == baseLen)
+		{
+			counter = 1;
+		}
+		else
+		{
+			counter = atoi(&name[baseLen]);
+			counter ++;
+		}
+		strcpy(&name[baseLen], int2str(counter));
+		//printf(0, "mkdir: %s failed to create\n", newfolder);
 	}
 }
 
 void h_newFolder(Point p) {
-	newFolder("newFolder");
+	char nf[32] = "newFolder";
+	newFolder(nf);
 	freeFileItemList();
+	printf(0, "new folder!\n");
 	list(".");
+	printItemList();
 	drawFinderContent(context);
-		deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
-		addWndEvent(&cm);
-		addListEvent(&cm);
+	deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+	addWndEvent(&cm);
+	addListEvent(&cm);
 }
 
 void deleteFile(char *name)
@@ -529,24 +582,22 @@ void h_closeWnd(Point p) {
 
 void h_chvm1(Point p) {
 	style = ICON_STYLE;
-	struct fileItem *pt = fileItemList;
-	int n = 0;
-	while (pt != 0) {
-		//printf(0, "draw item\n");
-		pt->pos = getPos(context, n++);
-		pt = pt->next;
-	}
+	freeFileItemList();
+		list(".");
+		drawFinderContent(context);
+			deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+			addWndEvent(&cm);
+			addListEvent(&cm);
 }
 
 void h_chvm2(Point p) {
 	style = LIST_STYLE;
-	struct fileItem *pt = fileItemList;
-	int n = 0;
-	while (pt != 0) {
-		//printf(0, "draw item\n");
-		pt->pos = getPos(context, n++);
-		pt = pt->next;
-	}
+	freeFileItemList();
+		list(".");
+		drawFinderContent(context);
+			deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+			addWndEvent(&cm);
+			addListEvent(&cm);
 }
 
 void h_goUp(Point p) {
@@ -575,6 +626,8 @@ int main(int argc, char *argv[]) {
 	load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
 	load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
 	//testHandlers();
+	newFolder("userfolder");
+	enterDir("userfolder");
 	freeFileItemList();
 	list(".");
 	deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
