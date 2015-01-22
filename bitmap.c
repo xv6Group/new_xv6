@@ -1,7 +1,6 @@
 #include "types.h"
 #include "user.h"
 #include "bitmap.h"
-#include "clickable.h"
 
 void showRgbQuan(RGBQUAD* pRGB);
 void showBmpHead(BITMAPFILEHEADER* pBmpHead);
@@ -159,18 +158,12 @@ void freepic(PICNODE *pic)
 void set_icon_alpha(PICNODE *pic)
 {
 	int W = 15;
-	Rect r1 = initRect(0, 0, W, W);
-	Rect r2 = initRect(pic->width - W, 0, W, W);
-	Rect r3 = initRect(pic->width - W, pic->height - W, W, W);
-	Rect r4 = initRect(0, pic->height - W, W, W);
-	Point p;
 	int i, j;
 	for (i = 0; i < pic->width; i++)
 	{
 		for (j = 0; j < pic->height; j++)
 		{
-			p = initPoint(i,j);
-			if (isIn(p, r1) || isIn(p, r2) || isIn(p, r3) || isIn(p, r4))
+			if (i <= W || i >= pic->width - W || j <= W || j >= pic->width - W)
 			{
 				if (pic->data[j*pic->width+i].rgbBlue == 0xff && pic->data[j*pic->width+i].rgbGreen == 0xff && pic->data[j*pic->width+i].rgbRed == 0xff)
 				{

@@ -626,7 +626,7 @@ int main(int argc, char *argv[]) {
 	load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
 	load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
 	//testHandlers();
-	newFolder("userfolder");
+	mkdir("userfolder");
 	enterDir("userfolder");
 	freeFileItemList();
 	list(".");

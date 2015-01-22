@@ -5,4 +5,4 @@
 #define DRAGGING 4
 #define DRAG_RELEASE 5
 
-#define DOUBLE_CLICK_DELAY 15
+#define DOUBLE_CLICK_DELAY 30
