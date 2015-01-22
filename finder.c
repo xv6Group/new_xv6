@@ -17,17 +17,28 @@
 #define BUTTON_WIDTH 32
 #define BUTTON_HEIGHT 32
 
+#define TOOLSBAR_COLOR 0xc618
+#define TOOLSBAR_HEIGHT 50
+
 #define ICON_STYLE 1
 #define LIST_STYLE 2
 
 #define ICON_ITEM_WIDTH 100
-#define ICON_ITEM_HEIGHT 100
+#define ICON_ITEM_HEIGHT 95
 #define ICON_ITEM_GAP_X 30
-#define ICON_ITEM_GAP_Y 30
+#define ICON_ITEM_GAP_Y 20
 #define ICON_ITEM_OFFSET_X 25
-#define ICON_ITEM_OFFSET_Y 5
+#define ICON_ITEM_OFFSET_Y 10
 
-#define LIST_ITEM_HEIGHT 20
+#define LIST_ITEM_HEIGHT 30
+#define LIST_ITEM_GAP 1
+#define LIST_ITEM_OFFSET_X 8
+#define LIST_ITEM_OFFSET_Y 3
+#define LIST_ITEM_FILENAME 40
+#define LIST_ITEM_SIZE 200
+
+#define TAGBAR_HEIGHT 28
+#define TAGBAR_COLOR 0xa514
 
 #define ICON_WIDTH_BIG 50
 #define ICON_HEIGHT_BIG 50
@@ -37,6 +48,7 @@
 
 struct Context context;
 ClickableManager cm;
+int isRun = 1;
 // 文件项
 struct fileItem {
 	struct stat st;
@@ -55,11 +67,11 @@ char* fmtname(char *path);
 void list(char *path);
 
 // 绘图函数
-void drawItem(Context context, char *name, struct stat st, Rect rect);
+void drawItem(Context context, char *name, struct stat st, Rect rect, int chosen);
 void drawFinderWnd(Context context);
 void drawFinderContent(Context context);
 Rect getPos(Context context, int n); //根据文件序号，计算文件所在位置。
-int style = 1; //绘制风格
+int style = LIST_STYLE; //绘制风格
 int itemCounter = 0; // 第几个文件
 
 // 事件处理函数
@@ -78,6 +90,8 @@ void h_empty(Point p);
 void h_chvm2(Point p);
 void h_chvm1(Point p);
 void h_goUp(Point p);
+
+char * sizeFormat(uint size);
 
 //测试相关函数
 void printItemList();
@@ -194,8 +208,16 @@ struct Icon contentRes[] = { { "file_icon_big.bmp", 0, 0 }, {
 #define FOLDER_ICON_BIG 2
 #define FOLDER_ICON_SMALL 3
 
-void drawItem(Context context, char *name, struct stat st, Rect rect) {
+void drawItem(Context context, char *name, struct stat st, Rect rect, int chosen) {
 	//cprintf("draw finder Item: type=%d counter=%d\n", type, n);
+	unsigned short nameColor;
+	if (chosen == 0) 
+		nameColor = 0x0;
+	else 
+	{
+		nameColor = 0xFFFF;
+		fill_rect(context, rect.start.x, rect.start.y, rect.width, rect.height, 0x2110);
+	}
 	if (style == ICON_STYLE) {
 		switch (st.type) {
 		case T_FILE:
@@ -214,22 +236,55 @@ void drawItem(Context context, char *name, struct stat st, Rect rect) {
 		//printf(0,"indent: %d  filenamelen: %d\n", indent, strlen(name));
 		if (indent < 0)
 			indent = 0;
-		puts_str(context, name, 0x0, rect.start.x + indent,
-				rect.start.y + ICON_HEIGHT_BIG + 8);
+		puts_str(context, name, nameColor, rect.start.x + indent,
+				rect.start.y + ICON_ITEM_OFFSET_Y + ICON_HEIGHT_BIG + 10);
 	} else {
 		switch (st.type) {
 		case T_FILE:
-			draw_picture(context, contentRes[FILE_ICON_SMALL].pic, rect.start.x,
-					rect.start.y);
+			draw_picture(context, contentRes[FILE_ICON_SMALL].pic, 
+					rect.start.x + LIST_ITEM_OFFSET_X, rect.start.y + LIST_ITEM_OFFSET_Y);
+			char *size;
+			size = sizeFormat(st.size);
+			puts_str(context, size, nameColor, rect.start.x + LIST_ITEM_SIZE,
+					rect.start.y + LIST_ITEM_OFFSET_Y);
 			break;
 		case T_DIR:
 			draw_picture(context, contentRes[FOLDER_ICON_SMALL].pic,
-					rect.start.x, rect.start.y);
+					rect.start.x + LIST_ITEM_OFFSET_X, rect.start.y + LIST_ITEM_OFFSET_Y);
 			break;
 		}
-		puts_str(context, name, 0x0, rect.start.x + ICON_WIDTH_SMALL + 2,
-				rect.start.y + 2);
+		puts_str(context, name, nameColor, rect.start.x + LIST_ITEM_FILENAME,
+				rect.start.y + LIST_ITEM_OFFSET_Y);
 	}
+}
+
+char *sizeFormat(uint size){
+	char* result = (char *) malloc(12 * sizeof(char));
+	int n = 0;
+	if (size > 0x400) 
+	{
+		size = size / (0x400);
+		do{
+			result[n++] = (size % 10) + '0';
+			size /= 10;
+		}while (size!=0);
+		result[n++] = 'K';
+		result[n++] = 'b';
+		result[n] = 0;
+	}
+	else 
+	{
+		do{
+			result[n++] = (size % 10) + '0';
+			size /= 10;
+		}while (size!=0);
+		result[n++] = 'b';
+		result[n++] = 'y';
+		result[n++] = 't';
+		result[n++] = 'e';
+		result[n] = 0;
+	}
+	return result;
 }
 
 struct Icon wndRes[] = { { "close.bmp", 3, 3 }, { "foldericon.bmp", WINDOW_WIDTH
@@ -255,15 +310,27 @@ void drawFinderWnd(Context context) {
 	draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
 	fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT,
 			TOOLSBAR_COLOR);
-	puts_str(context, "finder", 0, WINDOW_WIDTH / 2, 3);
+	puts_str(context, "Finder", 0, WINDOW_WIDTH / 2, 3);
 	//printf(0, "drawing window\n");
 	draw_iconlist(context, wndRes, sizeof(wndRes) / sizeof(ICON));
+
+	if (style == LIST_STYLE)
+	{
+		fill_rect(context, 1, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + 1, LIST_ITEM_FILENAME - 2, TAGBAR_HEIGHT, TAGBAR_COLOR);
+		fill_rect(context, LIST_ITEM_FILENAME, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + 1, LIST_ITEM_SIZE - LIST_ITEM_FILENAME - 1, TAGBAR_HEIGHT, TAGBAR_COLOR);
+		fill_rect(context, LIST_ITEM_SIZE, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + 1, context.width - LIST_ITEM_SIZE - 1, TAGBAR_HEIGHT, TAGBAR_COLOR);		
+		puts_str(context, "Name", 0, LIST_ITEM_FILENAME + 3, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + TAGBAR_HEIGHT - 18);
+		puts_str(context, "Size", 0, LIST_ITEM_SIZE + 3, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + TAGBAR_HEIGHT - 18);
+	}
 }
 
 void drawFinderContent(Context context) {
 	struct fileItem *p;
 	//printf(0, "listing contents\n");
-	fill_rect(context, 1, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, context.width - 2,
+
+	int contentTop = TOPBAR_HEIGHT + TOOLSBAR_HEIGHT;
+	if (style == LIST_STYLE) contentTop += TAGBAR_HEIGHT;
+	fill_rect(context, 1, contentTop, context.width - 2,
 			context.height - (TOPBAR_HEIGHT + TOOLSBAR_HEIGHT), 0xFFFF);
 
 	//printf(0, "listing complete!\n");
@@ -272,11 +339,7 @@ void drawFinderContent(Context context) {
 	itemCounter = 0;
 	while (p != 0) {
 		//printf(0, "draw item\n");
-		if (p->chosen)
-		{
-			fill_rect(context, p->pos.start.x, p->pos.start.y, p->pos.width, p->pos.height, 0x0101);
-		}
-		drawItem(context, p->name, p->st, p->pos);
+		drawItem(context, p->name, p->st, p->pos, p->chosen);
 		p = p->next;
 	}
 }
@@ -295,14 +358,12 @@ Rect getPos(Context context, int n) {
 		int m = context.width / (ICON_ITEM_WIDTH + ICON_ITEM_GAP_X);
 		int r = n / m;
 		int c = n % m;
-		int y_top =
-				r
-						* (ICON_ITEM_HEIGHT + ICON_ITEM_GAP_Y)+ TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + ICON_ITEM_GAP_Y;
+		int y_top = r * (ICON_ITEM_HEIGHT + ICON_ITEM_GAP_Y)+ TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + ICON_ITEM_GAP_Y;
 		int x_left = c * (ICON_ITEM_WIDTH + ICON_ITEM_GAP_X);
 		return initRect(x_left, y_top, ICON_ITEM_WIDTH,
 				ICON_ITEM_HEIGHT);
 	} else {
-		return initRect(0, n * LIST_ITEM_HEIGHT, context.width,
+		return initRect(0, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + TAGBAR_HEIGHT + n * (LIST_ITEM_HEIGHT + LIST_ITEM_GAP), context.width,
 				LIST_ITEM_HEIGHT);
 	}
 }
@@ -423,7 +484,22 @@ void h_newFolder(Point p) {
 		addListEvent(&cm);
 }
 
+void deleteFile(char *name)
+{
+	if(unlink(name) < 0){
+		 printf(2, "rm: %s failed to delete\n", name);
+	}
+}
 void h_deleteFile(Point p) {
+	struct fileItem *q = fileItemList;
+	while (q != 0)
+	{
+		if (q->chosen)
+		{
+			deleteFile(q->name);
+		}
+		q = q->next;
+	}
 	freeFileItemList();
 	list(".");
 	drawFinderContent(context);
@@ -448,15 +524,29 @@ void h_chooseFile(Point p) {
 }
 
 void h_closeWnd(Point p) {
-
+	isRun = 0;
 }
 
 void h_chvm1(Point p) {
-	style = 1;
+	style = ICON_STYLE;
+	struct fileItem *pt = fileItemList;
+	int n = 0;
+	while (pt != 0) {
+		//printf(0, "draw item\n");
+		pt->pos = getPos(context, n++);
+		pt = pt->next;
+	}
 }
 
 void h_chvm2(Point p) {
-	style = 2;
+	style = LIST_STYLE;
+	struct fileItem *pt = fileItemList;
+	int n = 0;
+	while (pt != 0) {
+		//printf(0, "draw item\n");
+		pt->pos = getPos(context, n++);
+		pt = pt->next;
+	}
 }
 
 void h_goUp(Point p) {
@@ -477,15 +567,14 @@ int main(int argc, char *argv[]) {
 
 	int winid;
 	struct Msg msg;
-	int isRun = 1;
-	Point p;
 
+	Point p;
 
 	winid = init_context(&context, WINDOW_WIDTH, WINDOW_HEIGHT);
 	cm = initClickManager(context);
 	load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
 	load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
-	testHandlers();
+	//testHandlers();
 	freeFileItemList();
 	list(".");
 	deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
@@ -515,7 +604,7 @@ int main(int argc, char *argv[]) {
 					msg.concrete_msg.msg_partial_update.y2);
 			break;
 		case MSG_LPRESS:
-			printf(0, "left click event!\n");
+			//printf(0, "left click event!\n");
 			p = initPoint(msg.concrete_msg.msg_mouse.x,
 					msg.concrete_msg.msg_mouse.y);
 			if (executeHandler(cm.left_click, p)) {
