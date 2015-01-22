@@ -119,12 +119,12 @@ struct File_Node fontFile;
 void initializeGBK(){
 	int fd;
 	printf(0,"initialzing gbk\n");
-	if((fd = open(HANKAKU, 0)) < 0){
+	if((fd = open(HZK16, 0)) < 0){
 		printf(0,"cannot open %s\n", HZK16);
 		return;
 	}
-	fontFile.buf = malloc(26624*sizeof(unsigned char));
-	fontFile.size = read(fd, fontFile.buf, 26624);
+	fontFile.buf = malloc(27000*sizeof(unsigned char));
+	fontFile.size = read(fd, fontFile.buf, 27000);
 	printf(0,"initialzing gbk complete!\n");
 	close(fd);
 }
@@ -148,12 +148,11 @@ void put_ascii(struct Context c, unsigned char ascii, unsigned short colorNum, i
 	}
 }
 
-void put_gbk(struct Context c, unsigned char gbk, unsigned short colorNum, int x, int y)
+void put_gbk(struct Context c, short gbk, unsigned short colorNum, int x, int y)
 {
 	int tmpX, tmpY;
 	unsigned int offset;
 	unsigned char *hzk16Base;
-
 	if((gbk & 0x00FF) >= 0xA1 && ((gbk >> 8) & 0x00FF) >= 0xA1) {
 		hzk16Base = fontFile.buf;
 		offset = (((gbk & 0x00FF) - 0xa1) * 94 + (((gbk >> 8) & 0x00FF) - 0xa1)) * 32;
@@ -218,6 +217,7 @@ void draw_picture(Context c, PICNODE pic, int x, int y)
 		for (j = 0; j < pic.width; j++)
 		{
 			rgb = pic.data[i*pic.width+j];
+			if (rgb.rgbReserved == 1) continue;
 			color = (unsigned short)_RGB16BIT565(rgb.rgbRed, rgb.rgbGreen, rgb.rgbBlue);
 			draw_point(c, j + x, pic.height - 1 - i + y, color);
 		}
@@ -284,3 +284,5 @@ void draw_iconlist(Context c, ICON* iconlist, int len)
         draw_picture(c, iconlist[i].pic, iconlist[i].position_x, iconlist[i].position_y);
     }
 }
+
+

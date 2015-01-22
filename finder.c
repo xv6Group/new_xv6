@@ -37,6 +37,7 @@
 
 struct Context context;
 ClickableManager cm;
+int isRun = 1;
 // 文件项
 struct fileItem {
 	struct stat st;
@@ -264,7 +265,7 @@ void drawFinderContent(Context context) {
 	struct fileItem *p;
 	//printf(0, "listing contents\n");
 	fill_rect(context, 1, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, context.width - 2,
-			context.height - (TOPBAR_HEIGHT + TOOLSBAR_HEIGHT), 0xFFFF);
+			context.height - (TOPBAR_HEIGHT + TOOLSBAR_HEIGHT) - 2, 0xFFFF);
 
 	//printf(0, "listing complete!\n");
 	//printItemList();
@@ -423,7 +424,22 @@ void h_newFolder(Point p) {
 		addListEvent(&cm);
 }
 
+void deleteFile(char *name)
+{
+	if(unlink(name) < 0){
+		 printf(2, "rm: %s failed to delete\n", name);
+	}
+}
 void h_deleteFile(Point p) {
+	struct fileItem *q = fileItemList;
+	while (q != 0)
+	{
+		if (q->chosen)
+		{
+			deleteFile(q->name);
+		}
+		q = q->next;
+	}
 	freeFileItemList();
 	list(".");
 	drawFinderContent(context);
@@ -448,7 +464,7 @@ void h_chooseFile(Point p) {
 }
 
 void h_closeWnd(Point p) {
-
+	isRun = 0;
 }
 
 void h_chvm1(Point p) {
@@ -477,15 +493,14 @@ int main(int argc, char *argv[]) {
 
 	int winid;
 	struct Msg msg;
-	int isRun = 1;
-	Point p;
 
+	Point p;
 
 	winid = init_context(&context, WINDOW_WIDTH, WINDOW_HEIGHT);
 	cm = initClickManager(context);
 	load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
 	load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
-	testHandlers();
+	//testHandlers();
 	freeFileItemList();
 	list(".");
 	deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
@@ -515,7 +530,7 @@ int main(int argc, char *argv[]) {
 					msg.concrete_msg.msg_partial_update.y2);
 			break;
 		case MSG_LPRESS:
-			printf(0, "left click event!\n");
+			//printf(0, "left click event!\n");
 			p = initPoint(msg.concrete_msg.msg_mouse.x,
 					msg.concrete_msg.msg_mouse.y);
 			if (executeHandler(cm.left_click, p)) {

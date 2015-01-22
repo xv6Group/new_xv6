@@ -51,4 +51,5 @@ typedef struct PicNode {
 
 void loadBitmap(PICNODE *pic, char pic_name[]);
 void freepic(PICNODE *pic);
+void set_icon_alpha(PICNODE *pic);
 #endif
