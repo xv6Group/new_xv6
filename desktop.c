@@ -14,7 +14,7 @@ ICON iconlist[] = {
     //{"setting.bmp", 550, 400}
 };
 
-int shellinit(Point point)
+void shellinit(Point point)
 {
     int pid;
     char* shell_argv[] = { "shell", 0 };
@@ -32,10 +32,10 @@ int shellinit(Point point)
         printf(1, "init shell: exec shell failed\n");
         exit();
     }
-    return pid;
+//    return pid;
 }
 
-int finderinit(Point point)
+void finderinit(Point point)
 {
     int pid;
     char* finder_argv[] = { "finder", 0 };
@@ -53,7 +53,26 @@ int finderinit(Point point)
         printf(1, "init finder: exec finder failed\n");
         exit();
     }
-    return pid;
+//    return pid;
+}
+
+void playmusic(Point point)
+{
+    int pid;
+    char* argv[] = { "qian.wav" };
+    printf(0, "start playing music \n");
+    pid = fork();
+    if (pid < 0)
+    {
+        printf(1, "init play: fork failed\n");
+        exit();
+    }
+    if (pid == 0)
+    {
+        exec("play", argv);
+        printf(1, "init play: exec play failed\n");
+        exit();
+    }
 }
 
 int main(int argc, char *argv[])
@@ -64,34 +83,36 @@ int main(int argc, char *argv[])
     //int shell_pid;
     //int finder_pid;
     short isRun = 1;
-    short isInit = 1;
+//    short isInit = 1;
     ClickableManager manager;
 
     winid = init_context(&context, 800, 600);
-    fill_rect(context, 0, 0, context.width, context.height, 0xffff);
-    puts_str(context, "desktop: welcome", 0x0, 0, 0);
+//    fill_rect(context, 0, 0, context.width, context.height, 0xffff);
+//    puts_str(context, "desktop: welcome", 0x0, 0, 0);
 //加载有点慢，先注释掉了。
-    //PICNODE pic1, pic2, pic3, pic4;
-//    loadBitmap(&pic1, "music.bmp");
-//    loadBitmap(&pic2, "gamecenter.bmp");
-//    loadBitmap(&pic3, "notes.bmp");
-//    loadBitmap(&pic4, "setting.bmp");
-//    set_icon_alpha(&pic1);
-//    set_icon_alpha(&pic2);
-//    set_icon_alpha(&pic3);
+    PICNODE pic1, pic2, pic3, background;
+    loadBitmap(&pic1, "music.bmp");
+    loadBitmap(&pic2, "gamecenter.bmp");
+    loadBitmap(&pic3, "notes.bmp");
+    loadBitmap(&background, "bg.bmp");
+    set_icon_alpha(&pic1);
+    set_icon_alpha(&pic2);
+    set_icon_alpha(&pic3);
 //    set_icon_alpha(&pic4);
 //
 //    fill_rect(context, 160, 400, 500, 150, 0x0101);
 //    //loadBitmap(&background, "bg.bmp");
-//    //draw_picture(context, background, 0, 0);
-//    draw_picture(context, pic1, 175, 400);
-//    draw_picture(context, pic2, 300, 400);
-//    draw_picture(context, pic3, 425, 400);
-//    draw_picture(context, pic4, 550, 400);
+    //draw_picture(context, background, 0, 0);
+    draw_picture(context, background, 0, 0);
+    draw_picture(context, pic1, 225, 450);
+    draw_picture(context, pic2, 367, 450);
+    draw_picture(context, pic3, 500, 450);
     //draw_iconlist(context, iconlist, sizeof(iconlist) / sizeof(ICON));
 
     manager = initClickManager(context);
-    //createClickable(&manager, initRect(175, 400, 75, 75), MSG_DOUBLECLICK, executeShell);
+    createClickable(&manager, initRect(225, 450, 75, 75), MSG_DOUBLECLICK, playmusic);
+    createClickable(&manager, initRect(367, 450, 75, 75), MSG_DOUBLECLICK, shellinit);
+    createClickable(&manager, initRect(500, 450, 75, 75), MSG_DOUBLECLICK, finderinit);
 
     while(isRun)
     {
@@ -101,14 +122,14 @@ int main(int argc, char *argv[])
             case MSG_UPDATE:
                 updateWindow(winid, context.addr);
                 //printf(0, "desktop");
-                if (isInit)
+                /*if (isInit)
                 {
                     finderinit((Point){0, 0});
                     //finderinit((Point){0, 0});
                     //shell_pid = shellinit((Point){context.width / 2, context.height / 2});
                     //shellinit((Point){context.width / 2, context.height / 2});
                     isInit = 0;
-                }
+                }*/
                 break;
             case MSG_PARTIAL_UPDATE:
                 updatePartialWindow(winid, context.addr, msg.concrete_msg.msg_partial_update.x1, msg.concrete_msg.msg_partial_update.y1, msg.concrete_msg.msg_partial_update.x2, msg.concrete_msg.msg_partial_update.y2);
