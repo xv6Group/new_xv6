@@ -58,7 +58,7 @@ void createClickable(ClickableManager *c, Rect r, int MsgType, Handler h)
 
 void addClickable(Clickable **head, Rect r, Handler h)
 {
-	printf(0, "adding clickable\n");
+	//printf(0, "adding clickable\n");
 	Clickable *c = (Clickable *)malloc(sizeof(Clickable));
 	c->area = r;
 	c->handler = h;
@@ -108,7 +108,7 @@ void deleteClickable(Clickable **head, Rect region)
 	}
 }
 
-void executeHandler(Clickable *head, Point click)
+int executeHandler(Clickable *head, Point click)
 {
 	Clickable *cur = head;
 	while (cur != 0)
@@ -116,11 +116,12 @@ void executeHandler(Clickable *head, Point click)
 		if (isIn(click, cur->area))
 		{
 			cur->handler(click);
-			return;
+			return 1;
 		}
 		cur = cur->next;
 	}
 	printf(0, "execute: none!\n");
+	return 0;
 }
 
 void printClickable(Clickable *c)

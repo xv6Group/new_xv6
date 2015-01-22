@@ -45,6 +45,6 @@ void addClickable(Clickable **head, Rect r, Handler h);
 //删除起始坐标在region内部的所有Clickable
 void deleteClickable(Clickable **head, Rect region);
 //执行点击坐标在area内部的clickable函数
-void executeHandler(Clickable *head, Point click);
+int executeHandler(Clickable *head, Point click);
 void testClickable(struct Context c);
 #endif
