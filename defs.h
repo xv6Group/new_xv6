@@ -208,6 +208,7 @@ void 			drawArea(struct Window*, ushort*, int, int, int, int);
 void			drawScreenArea(int, int, int, int);
 struct Rect 	getIntersection(struct Rect, struct Rect);
 struct Rect 	getUnion(struct Rect, struct Rect);
+void            setMouse(int, int);
 
 //message.c
 void 			msgqueueinit();

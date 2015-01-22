@@ -172,7 +172,10 @@ void drawWindow(WindowLink pWindow, color16* context)
     if (pWindow->next_window != 0)
         createUpdateMsg(pWindow->next_window->pid);
     else
+    {
     	memmove(vesa_array, vesa_buffer, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(color16));
+   		drawMouse(mouseX, mouseY);
+    }
 }
 
 void drawScreen()
@@ -285,21 +288,28 @@ static color16 mouse[10][15] = {
 }
 */
 
+void setMouse(int x, int y)
+{
+    mouseX = x;
+    mouseY = y;
+}
+
 void drawMouse(int x, int y)
 {
 	int i, j;
+    if (x < 0) return;
 	if (mouseX >= 0)
 	{
-		for (i = 0; i < 10; i++)
-			for (j = 0; j < 15; j++)
+		for (j = 0; j < 15; j++)
+			for (i = 0; i < 10; i++)
 			{
 				vesa_array[(j + mouseY) * SCREEN_WIDTH + i + mouseX] = vesa_buffer[(j + mouseY) * SCREEN_WIDTH + i + mouseX];
 			}
 	}
 	mouseX = x;
 	mouseY = y;
-	for (i = 0; i < 10; i++)
-		for (j = 0; j < 15; j++)
+	for (j = 0; j < 15; j++)
+		for (i = 0; i < 10; i++)
 		{
 			if (mouse[i][j] != 2016)
 				vesa_array[(j + mouseY) * SCREEN_WIDTH + i + mouseX] = mouse[i][j];
