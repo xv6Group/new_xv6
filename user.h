@@ -7,6 +7,7 @@ int fork(void);
 int exit(void) __attribute__((noreturn));
 int wait(void);
 int pipe(int*);
+int kwrite(void*, int);
 int write(int, void*, int);
 int read(int, void*, int);
 int close(int);
@@ -29,6 +30,13 @@ int createWindow(int, int, int, int);
 int destroyWindow(int);
 int updateWindow(int, unsigned short*);
 int updatePartialWindow(int, unsigned short*, int, int, int, int);
+int setSampleRate(int);
+int pause();
+int wavdecode();
+int beginDecode();
+int waitForDecode();
+int endDecode();
+int getCoreBuf();
 
 // ulib.c
 int stat(char*, struct stat*);

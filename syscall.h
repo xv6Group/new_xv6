@@ -25,3 +25,11 @@
 #define SYS_destroyWindow 24
 #define SYS_updateWindow 25
 #define SYS_updatePartialWindow 26
+#define SYS_setSampleRate 27
+#define SYS_kwrite 28
+#define SYS_pause 29
+#define SYS_wavdecode 30
+#define SYS_beginDecode 31
+#define SYS_waitForDecode 32
+#define SYS_endDecode 33
+#define SYS_getCoreBuf 34
