@@ -11,16 +11,21 @@
 #include "clickable.h"
 #include "fcntl.h"
 
+#define WINDOW_WIDTH 600
+#define WINDOW_HEIGHT 450
+
 #define BUTTON_WIDTH 32
 #define BUTTON_HEIGHT 32
 
 #define ICON_STYLE 1
 #define LIST_STYLE 2
 
-#define ICON_ITEM_WIDTH 50
-#define ICON_ITEM_HEIGHT 70
-#define ICON_ITEM_GAP_X 15
-#define ICON_ITEM_GAP_Y 15
+#define ICON_ITEM_WIDTH 100
+#define ICON_ITEM_HEIGHT 100
+#define ICON_ITEM_GAP_X 30
+#define ICON_ITEM_GAP_Y 30
+#define ICON_ITEM_OFFSET_X 25
+#define ICON_ITEM_OFFSET_Y 5
 
 #define LIST_ITEM_HEIGHT 20
 
@@ -202,13 +207,17 @@ void drawItem(Context context, char *name, struct stat st, Rect rect)
         switch (st.type)
         {
             case T_FILE:
-                draw_picture(context, contentRes[FILE_ICON_BIG].pic, rect.start.x, rect.start.y);
+                draw_picture(context, contentRes[FILE_ICON_BIG].pic, rect.start.x + ICON_ITEM_OFFSET_X, rect.start.y + ICON_ITEM_OFFSET_Y);
                 break;
             case T_DIR:
-                draw_picture(context, contentRes[FOLDER_ICON_BIG].pic, rect.start.x, rect.start.y);
+                draw_picture(context, contentRes[FOLDER_ICON_BIG].pic, rect.start.x + ICON_ITEM_OFFSET_X, rect.start.y + ICON_ITEM_OFFSET_Y);
                 break;
         }
-        puts_str(context, name, 0x0, rect.start.x + 3, rect.start.y + ICON_HEIGHT_BIG + 2);
+        int indent;
+        indent = ((ICON_ITEM_WIDTH / 8) - strlen(name)) * 4;
+        //printf(0,"indent: %d  filenamelen: %d\n", indent, strlen(name));
+        if (indent < 0) indent = 0;
+        puts_str(context, name, 0x0, rect.start.x + indent, rect.start.y + ICON_HEIGHT_BIG + 2);
     }
     else 
     {
@@ -227,11 +236,13 @@ void drawItem(Context context, char *name, struct stat st, Rect rect)
     
 struct Icon wndRes[] = {
     {"close.bmp", 3, 3},
-    {"foldericon.bmp", 180, 3},
-    {"viewingmode2.bmp", 400 - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
-    {"viewingmode1.bmp", 400 - (2 * BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"folder_icon_small.bmp", WINDOW_WIDTH / 2 - 25, 3},
+    {"viewingmode2.bmp", WINDOW_WIDTH - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"viewingmode1.bmp", WINDOW_WIDTH - (2 * BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
     {"createfolder.bmp", 5, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
-    {"createfile.bmp", (BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)}
+    {"createfile.bmp", (BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"up.bmp", 2 * BUTTON_WIDTH + 100, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"trash.bmp", 3 * BUTTON_WIDTH + 110, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)}
 };
 
 void drawFinderWnd(Context context) {
@@ -348,8 +359,8 @@ void enterDir(char *name)
 
 void h_enterDir(Point p)
 {
-	struct fileItem *temp = getFileItem(p);
-	enterDir(temp->name);
+    struct fileItem *temp = getFileItem(p);
+    enterDir(temp->name);
 }
 
 void cat(int fd)
@@ -377,21 +388,21 @@ void newFile(char *name)
 
 void h_newFile(Point p)
 {
-	newFile("newfile.txt");
+    newFile("newfile.txt");
 }
 
 
 
 void newFolder(char *newfolder)
 {
-	if(mkdir(newfolder) < 0){
-		 printf(0, "mkdir: %s failed to create\n", newfolder);
-	}
+    if(mkdir(newfolder) < 0){
+         printf(0, "mkdir: %s failed to create\n", newfolder);
+    }
 }
 
 void h_newFolder(Point p)
 {
-	newFolder("newFolder");
+    newFolder("newFolder");
 }
 
 void h_deleteFile(Point p)
@@ -414,7 +425,7 @@ int main(int argc, char *argv[]) {
     Point p;
 
     ClickableManager cm;
-    winid = init_context(&context, 400, 300);
+    winid = init_context(&context, WINDOW_WIDTH, WINDOW_HEIGHT);
     cm = initClickManager(context);
     load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
     load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
@@ -460,7 +471,7 @@ int main(int argc, char *argv[]) {
 
 void testHandlers()
 {
-	freeFileItemList();
+
 	list(".");
 	printf(0, "original list:\n");
 	printItemList();
