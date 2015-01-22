@@ -21,7 +21,7 @@ void            bwrite(struct buf*);
 // console.c
 void            consoleinit(void);
 void            cprintf(char*, ...);
-void            consoleintr(int(*)(void));
+void            consoleintr(int(*)(void), int);
 void            panic(char*) __attribute__((noreturn));
 
 // exec.c
@@ -142,6 +142,7 @@ char*           safestrcpy(char*, const char*, int);
 int             strlen(const char*);
 int             strncmp(const char*, const char*, uint);
 char*           strncpy(char*, const char*, int);
+int             strmatch(const char *s, const char *m);
 
 // syscall.c
 int             argint(int, int*);

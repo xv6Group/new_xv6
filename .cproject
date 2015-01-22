@@ -49,11 +49,11 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="xv6.cdt.managedbuild.target.gnu.cross.exe.997593198" name="Executable" projectType="cdt.managedbuild.target.gnu.cross.exe"/>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.1263677390;cdt.managedbuild.config.gnu.cross.exe.debug.1263677390.;cdt.managedbuild.tool.gnu.cross.c.compiler.1465068024;cdt.managedbuild.tool.gnu.c.compiler.input.1724650595">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.113348458;cdt.managedbuild.config.gnu.cross.exe.debug.113348458.;cdt.managedbuild.tool.gnu.cross.c.compiler.297856119;cdt.managedbuild.tool.gnu.c.compiler.input.156947005">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 </cproject>

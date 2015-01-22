@@ -34,6 +34,7 @@ void puts_str(struct Context c, char *str, unsigned short colorNum, int x, int y
 void draw_picture(Context c, struct PicNode pic, int x, int y);
 void draw_line(Context c, int x0, int y0, int x1, int y1, unsigned short color);
 void draw_window(Context c, char *title);
+void load_iconlist(ICON* iconlist, int len);
 void draw_iconlist(Context c, ICON* iconlist, int len);
 
 #endif

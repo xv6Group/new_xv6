@@ -24,9 +24,9 @@ void loadBitmap(PICNODE *pic, char pic_name[])
 	//pfile = fopen(strFile,"rb");//打开文件
 	BmpFileHeader=(char *)malloc(14*sizeof(char));
 
-	printf(0, "file bmp open success.\n");
+	//printf(0, "file bmp open success.\n");
 	//读取位图文件头信息
-	printf(0, "reading BmpFileHeader.\n");
+	//printf(0, "reading BmpFileHeader.\n");
 	n = read(fd, BmpFileHeader, 14);
 	//fread(BmpFileHeader,1,14,pfile);
 	temp_WORD=(WORD* )(BmpFileHeader);
@@ -44,9 +44,9 @@ void loadBitmap(PICNODE *pic, char pic_name[])
 	bitHead.bfReserved2=*temp_WORD;
 	temp_DWORD=(DWORD*)(BmpFileHeader+sizeof(bitHead.bfType)+sizeof(bitHead.bfSize)+sizeof(bitHead.bfReserved1)+sizeof(bitHead.bfReserved2));
 	bitHead.bfOffBits=*temp_DWORD;
-	printf(0, "reading BmpFileHeader success!\n");
+	//printf(0, "reading BmpFileHeader success!\n");
 	//showBmpHead(&bitHead);
-	printf(0, "\n\n");
+	//printf(0, "\n\n");
 //
 //	//读取位图信息头信息
 	read(fd, &bitInfoHead, sizeof(BITMAPINFOHEADER));
@@ -55,7 +55,7 @@ void loadBitmap(PICNODE *pic, char pic_name[])
 	printf(0, "bmp width: %d, height: %d, size: %d\n", width, height, width*height*sizeof(RGBQUAD));
 	//fread(&bitInfoHead,1,sizeof(BITMAPINFOHEADER),pfile);
 	//showBmpInforHead(&bitInfoHead);
-	printf(0, "\n");
+	//printf(0, "\n");
 	if (n == 0)
 	{
 		printf(0, "0");
@@ -71,7 +71,7 @@ void loadBitmap(PICNODE *pic, char pic_name[])
 	read(fd, pColorData, nData);
 	//fread(pColorData,1,nData,pfile);
 
-	printf(0, "reading bmp data.\n");
+	//printf(0, "reading bmp data.\n");
 	//将位图数据转化为RGB数据
 	RGBQUAD* dataOfBmp;
 
@@ -96,7 +96,7 @@ void loadBitmap(PICNODE *pic, char pic_name[])
 			}
 	}
 
-	printf(0, "reading bmp data success!\n");
+	//printf(0, "reading bmp data success!\n");
 	//printf("像素数据信息:\n");
 
 //	for (i=0; i<width*height; i++)
