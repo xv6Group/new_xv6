@@ -161,7 +161,13 @@ void drawWindow(WindowLink pWindow, color16* context)
 */
     for (j = y1; j < y2; j++)
         for (i = x1; i < x2; i++)
-        	vesa_buffer[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
+        {
+            //WindowLink qWindow = list_tail;
+			//while (qWindow != pWindow && inClientRect(qWindow, i, j)) qWindow = qWindow->prior_window;
+            //if (qWindow == pWindow)         
+        	    vesa_buffer[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
+        }
+        	//vesa_buffer[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
         	//vesa_array[j * SCREEN_WIDTH + i] = context[(j - y1) * (x2 - x1) + i - x1];
     if (pWindow->next_window != 0)
         createUpdateMsg(pWindow->next_window->pid);
@@ -181,6 +187,7 @@ void printRect(Rect rect)
 
 void drawArea(WindowLink pWindow, color16* context, int x1, int y1, int x2, int y2)
 {
+    cprintf("When dragging, pid:%d window update.\n", pWindow->pid);
 	Rect area;
 	Rect dest;
 	int i, j;
@@ -190,7 +197,7 @@ void drawArea(WindowLink pWindow, color16* context, int x1, int y1, int x2, int 
 	area.right_x = x2;
 	area.right_y = y2;
 	dest = getIntersection(area, pWindow->window_position);
-	printRect(dest);
+	//printRect(dest);
 	for (j = dest.left_y; j < dest.right_y; j++)
 		for (i = dest.left_x; i < dest.right_x; i++)
         	vesa_buffer[j * SCREEN_WIDTH + i] = context[(j - clientRect.left_y) * (clientRect.right_x - clientRect.left_x) + i - clientRect.left_x];
