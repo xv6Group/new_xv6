@@ -198,7 +198,7 @@ UPROGS=\
 	_finder\
 
 fs.img: mkfs README $(UPROGS)
-	./mkfs fs.img README $(UPROGS) hankaku.txt close.bmp foldericon.bmp viewingmode1.bmp viewingmode2.bmp createfile.bmp createfolder.bmp up.bmp gamecenter.bmp
+	./mkfs fs.img README $(UPROGS) hankaku.txt close.bmp music.bmp notes.bmp gamecenter.bmp setting.bmp foldericon.bmp viewingmode1.bmp viewingmode2.bmp createfile.bmp createfolder.bmp up.bmp gamecenter.bmp bg.bmp
 
 
 -include *.d
