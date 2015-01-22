@@ -36,7 +36,7 @@
 #define ICON_HEIGHT_SMALL 20
 
 struct Context context;
-
+ClickableManager cm;
 // 文件项
 struct fileItem {
 	struct stat st;
@@ -97,6 +97,7 @@ void addFileItem(struct stat st, char *name, Rect pos) {
 	temp->st = st;
 	temp->pos = getPos(context, itemCounter);
 	temp->next = fileItemList;
+	temp->chosen = 0;
 	fileItemList = temp;
 }
 
@@ -264,14 +265,17 @@ void drawFinderContent(Context context) {
 	//printf(0, "listing contents\n");
 	fill_rect(context, 1, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, context.width - 2,
 			context.height - (TOPBAR_HEIGHT + TOOLSBAR_HEIGHT), 0xFFFF);
-	freeFileItemList();
-	list(".");
+
 	//printf(0, "listing complete!\n");
 	//printItemList();
 	p = fileItemList;
 	itemCounter = 0;
 	while (p != 0) {
 		//printf(0, "draw item\n");
+		if (p->chosen)
+		{
+			fill_rect(context, p->pos.start.x, p->pos.start.y, p->pos.width, p->pos.height, 0x0101);
+		}
 		drawItem(context, p->name, p->st, p->pos);
 		p = p->next;
 	}
@@ -295,11 +299,11 @@ Rect getPos(Context context, int n) {
 				r
 						* (ICON_ITEM_HEIGHT + ICON_ITEM_GAP_Y)+ TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + ICON_ITEM_GAP_Y;
 		int x_left = c * (ICON_ITEM_WIDTH + ICON_ITEM_GAP_X);
-		return initRect(x_left, y_top, x_left + ICON_ITEM_WIDTH,
-				y_top + ICON_ITEM_HEIGHT);
+		return initRect(x_left, y_top, ICON_ITEM_WIDTH,
+				ICON_ITEM_HEIGHT);
 	} else {
 		return initRect(0, n * LIST_ITEM_HEIGHT, context.width,
-				(n + 1) * LIST_ITEM_HEIGHT);
+				LIST_ITEM_HEIGHT);
 	}
 }
 
@@ -307,9 +311,11 @@ Rect getPos(Context context, int n) {
 void addItemEvent(ClickableManager *cm, struct fileItem item) {
 	switch (item.st.type) {
 	case T_FILE:
+		createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
 		break;
 	case T_DIR:
-		createClickable(cm, item.pos, MSG_LPRESS, h_enterDir);
+		createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
+		createClickable(cm, item.pos, MSG_DOUBLECLICK, h_enterDir);
 		break;
 	default:
 		printf(0, "unknown file type!");
@@ -361,6 +367,12 @@ void enterDir(char *name) {
 void h_enterDir(Point p) {
 	struct fileItem *temp = getFileItem(p);
 	enterDir(temp->name);
+	freeFileItemList();
+	list(".");
+	drawFinderContent(context);
+	deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+	addWndEvent(&cm);
+	addListEvent(&cm);
 }
 
 void cat(int fd) {
@@ -382,10 +394,17 @@ void newFile(char *name) {
 	}
 	//cat(fd);
 	close(fd);
+
 }
 
 void h_newFile(Point p) {
 	newFile("newfile.txt");
+	freeFileItemList();
+	list(".");
+	drawFinderContent(context);
+	deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+	addWndEvent(&cm);
+	addListEvent(&cm);
 }
 
 void newFolder(char *newfolder) {
@@ -396,15 +415,36 @@ void newFolder(char *newfolder) {
 
 void h_newFolder(Point p) {
 	newFolder("newFolder");
+	freeFileItemList();
+	list(".");
+	drawFinderContent(context);
+		deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+		addWndEvent(&cm);
+		addListEvent(&cm);
 }
 
 void h_deleteFile(Point p) {
-
+	freeFileItemList();
+	list(".");
+	drawFinderContent(context);
+		deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+		addWndEvent(&cm);
+		addListEvent(&cm);
 }
 
 void h_chooseFile(Point p) {
 	struct fileItem *temp = getFileItem(p);
-	temp->chosen = 1;
+	if (temp->chosen != 0)
+	{
+		printf(0, "chooseFile!\n");
+		temp->chosen = 0;
+	}
+	else
+	{
+		printf(0, "unchooseFile!\n");
+		temp->chosen = 1;
+	}
+	drawFinderContent(context);
 }
 
 void h_closeWnd(Point p) {
@@ -421,6 +461,12 @@ void h_chvm2(Point p) {
 
 void h_goUp(Point p) {
 	enterDir("..");
+	freeFileItemList();
+	list(".");
+	drawFinderContent(context);
+	deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+	addWndEvent(&cm);
+	addListEvent(&cm);
 }
 
 void h_empty(Point p) {
@@ -434,12 +480,17 @@ int main(int argc, char *argv[]) {
 	int isRun = 1;
 	Point p;
 
-	ClickableManager cm;
+
 	winid = init_context(&context, WINDOW_WIDTH, WINDOW_HEIGHT);
 	cm = initClickManager(context);
 	load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
 	load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
 	testHandlers();
+	freeFileItemList();
+	list(".");
+	deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+	addWndEvent(&cm);
+	addListEvent(&cm);
 	while (isRun) {
 		getMsg(&msg);
 		switch (msg.msg_type) {
@@ -447,19 +498,13 @@ int main(int argc, char *argv[]) {
 			p = initPoint(msg.concrete_msg.msg_mouse.x,
 					msg.concrete_msg.msg_mouse.y);
 			if (executeHandler(cm.double_click, p)) {
-				drawFinderContent(context);
-				deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
-				addWndEvent(&cm);
-				addListEvent(&cm);
 				updateWindow(winid, context.addr);
 			}
 			break;
 		case MSG_UPDATE:
+			//printf(0, "update event!\n");
 			drawFinderWnd(context);
 			drawFinderContent(context);
-			deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
-			addWndEvent(&cm);
-			addListEvent(&cm);
 			updateWindow(winid, context.addr);
 			break;
 		case MSG_PARTIAL_UPDATE:
@@ -470,13 +515,11 @@ int main(int argc, char *argv[]) {
 					msg.concrete_msg.msg_partial_update.y2);
 			break;
 		case MSG_LPRESS:
+			printf(0, "left click event!\n");
 			p = initPoint(msg.concrete_msg.msg_mouse.x,
 					msg.concrete_msg.msg_mouse.y);
 			if (executeHandler(cm.left_click, p)) {
-				drawFinderContent(context);
-				deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
-				addWndEvent(&cm);
-				addListEvent(&cm);
+
 				updateWindow(winid, context.addr);
 			}
 			break;
@@ -484,10 +527,6 @@ int main(int argc, char *argv[]) {
 			p = initPoint(msg.concrete_msg.msg_mouse.x,
 					msg.concrete_msg.msg_mouse.y);
 			if (executeHandler(cm.right_click, p)) {
-				drawFinderContent(context);
-				deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
-				addWndEvent(&cm);
-				addListEvent(&cm);
 				updateWindow(winid, context.addr);
 			}
 			break;
@@ -522,11 +561,11 @@ void testHandlers() {
 	freeFileItemList();
 	list(".");
 	printItemList();
-	printf(0, "\n");
-	printf(0, "enter last folder:\n");
-	enterDir("..");
-	freeFileItemList();
-	list(".");
-	printItemList();
+//	printf(0, "\n");
+//	printf(0, "enter last folder:\n");
+//	enterDir("..");
+//	freeFileItemList();
+//	list(".");
+//	printItemList();
 }
 
