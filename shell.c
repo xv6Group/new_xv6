@@ -63,6 +63,9 @@ main(int argc, char *argv[])
                 i++;
                 puts_str(context, "shell dragged!", 0x0, 0, 20*i);
                 break;
+            case MSG_PARTIAL_UPDATE:
+                updatePartialWindow(winid, context.addr, msg.concrete_msg.msg_partial_update.x1, msg.concrete_msg.msg_partial_update.y1, msg.concrete_msg.msg_partial_update.x2, msg.concrete_msg.msg_partial_update.y2);
+                break;
             default:
                 break;
         }

@@ -359,6 +359,7 @@ static uint
 bmap(struct inode *ip, uint bn)
 {
   uint addr, *a;
+  uint d1, d2, k1, k2, k3;
   struct buf *bp;
 
   if(bn < NDIRECT){
@@ -368,14 +369,36 @@ bmap(struct inode *ip, uint bn)
   }
   bn -= NDIRECT;
 
-  if(bn < NINDIRECT){
+  if(bn < NINDIRECT * NINDIRECT * NINDIRECT){
     // Load indirect block, allocating if necessary.
     if((addr = ip->addrs[NDIRECT]) == 0)
       ip->addrs[NDIRECT] = addr = balloc(ip->dev);
+    d1 = bn / NINDIRECT;
+    k1 = bn % NINDIRECT;
+    d2 = d1 / NINDIRECT;
+    k2 = d1 % NINDIRECT;
+    k3 = d2 % NINDIRECT;
     bp = bread(ip->dev, addr);
     a = (uint*)bp->data;
-    if((addr = a[bn]) == 0){
-      a[bn] = addr = balloc(ip->dev);
+    //Find the first level indirect block
+    if((addr = a[k3]) == 0){
+      a[k3] = addr = balloc(ip->dev);
+      log_write(bp);
+    }
+    brelse(bp);
+    bp = bread(ip->dev, addr);
+    a = (uint*)bp->data;
+    //Find the second level indirect block
+    if((addr = a[k2]) == 0){
+      a[k2] = addr = balloc(ip->dev);
+      log_write(bp);
+    }
+    brelse(bp);
+    bp = bread(ip->dev, addr);
+    a = (uint*)bp->data;
+    //Find the data block
+    if((addr = a[k1]) == 0){
+      a[k1] = addr = balloc(ip->dev);
       log_write(bp);
     }
     brelse(bp);

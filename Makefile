@@ -87,7 +87,7 @@ ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
 LDFLAGS += -m $(shell $(LD) -V | grep elf_i386 2>/dev/null)
 
 xv6.img: bootblock kernel fs.img
-	dd if=/dev/zero of=xv6.img count=10000
+	dd if=/dev/zero of=xv6.img count=120000
 	dd if=bootblock of=xv6.img conv=notrunc
 	dd if=kernel of=xv6.img seek=1 conv=notrunc
 
@@ -198,7 +198,9 @@ UPROGS=\
 	_finder\
 
 fs.img: mkfs README $(UPROGS)
-	./mkfs fs.img README $(UPROGS) hankaku.txt close.bmp foldericon.bmp viewingmode1.bmp viewingmode2.bmp createfile.bmp createfolder.bmp up.bmp
+	./mkfs fs.img README $(UPROGS) hankaku.txt close.bmp foldericon.bmp viewingmode1.bmp viewingmode2.bmp createfile.bmp createfolder.bmp up.bmp gamecenter.bmp folder_icon_big.bmp folder_icon_small.bmp file_icon_big.bmp file_icon_small.bmp bg.bmp music.bmp notes.bmp setting.bmp
+
+
 
 -include *.d
 

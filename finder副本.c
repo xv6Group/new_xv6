@@ -49,7 +49,7 @@ char* fmtname(char *path);
 void list(char *path);
 
 // 绘图函数
-void drawItem(Context context, char *name, short type, int n);
+void drawItem(Context context, char *name, struct stat st, Rect rect);
 void drawFinderWnd(Context context);
 void drawFinderContent(Context context);
 Rect getPos(Context context, int n);//根据文件序号，计算文件所在位置。
@@ -70,6 +70,7 @@ void chooseFile(Point p);
 
 // 文件项列表相关操作
 void addFileItem(struct stat st, char *name, Rect pos){
+<<<<<<< HEAD:finder副本.c
     struct fileItem *temp = (struct fileItem *)malloc(sizeof(struct fileItem));
     temp->name = name;
     temp->st = st;
@@ -88,6 +89,28 @@ void freeFileItemList(){
         free(temp->name);
         free(temp);
     }
+=======
+	struct fileItem *temp = (struct fileItem *)malloc(sizeof(struct fileItem));
+	temp->name = (char *)malloc(32 * sizeof(char));
+	strcpy(temp->name, name);
+	temp->st = st;
+	temp->pos = getPos(context, itemCounter);
+	temp->next = fileItemList;
+	fileItemList = temp;
+}
+
+void freeFileItemList(){
+	struct fileItem *p, *temp;
+	p = fileItemList;
+	while (p != 0)
+	{
+		temp = p;
+		p = p->next;
+		free(temp->name);
+		free(temp);
+	}
+	fileItemList = 0;
+>>>>>>> FETCH_HEAD:finder.c
 }
 
 
@@ -111,7 +134,16 @@ char* fmtname(char *path)
 }
 
 
-
+int containPoint(char *name)
+{
+	char *p = name;
+	while(*p != 0)
+	{
+		if (*p == '.') return 1;
+		p++;
+	}
+	return 0;
+}
 void list(char *path)
 {
   char buf[512], *p;
@@ -153,9 +185,11 @@ void list(char *path)
         printf(1, "ls: cannot stat %s\n", buf);
         continue;
       }
-      addFileItem(st, fmtname(buf), getPos(context, itemCounter));
-      //drawItem(context, fmtname(buf), st.type, itemCounter);
-      itemCounter ++;
+      if (containPoint(fmtname(buf)))
+      {
+    	  addFileItem(st, fmtname(buf), getPos(context, itemCounter));
+    	  itemCounter ++;
+      }
     }
     break;
   }
@@ -164,37 +198,47 @@ void list(char *path)
 
 
 // 绘图函数相关操作
-void drawItem(Context context, char *name, short type, int n)
+struct Icon contentRes[] = {
+		{"file_icon_big.bmp", 0, 0},
+		{"file_icon_small.bmp", 0, 0},
+		{"folder_icon_big.bmp", 0, 0},
+		{"folder_icon_small.bmp", 0, 0},
+};
+#define FILE_ICON_BIG 0
+#define FILE_ICON_SMALL 1
+#define FOLDER_ICON_BIG 2
+#define FOLDER_ICON_SMALL 3
+
+void drawItem(Context context, char *name, struct stat st, Rect rect)
 {
+<<<<<<< HEAD:finder副本.c
     PICNODE icon;
     Rect rect = getPos(context, n);
     //cprintf("draw finder Item: type=%d counter=%d\n", type, n);
+=======
+>>>>>>> FETCH_HEAD:finder.c
     if (style == ICON_STYLE)
     {
-        switch (type)
+        switch (st.type)
         {
             case T_FILE:
-                loadBitmap(&icon, "file_icon_big.bmp");
-                draw_picture(context, icon, rect.start.x, rect.start.y); 
+                draw_picture(context, contentRes[FILE_ICON_BIG].pic, rect.start.x, rect.start.y);
                 break;
             case T_DIR:
-                loadBitmap(&icon, "folder_icon_big.bmp");
-                draw_picture(context, icon, rect.start.x, rect.start.y);
+                draw_picture(context, contentRes[FOLDER_ICON_BIG].pic, rect.start.x, rect.start.y);
                 break;
         }
         puts_str(context, name, 0x0, rect.start.x + 3, rect.start.y + ICON_HEIGHT_BIG + 2);
     }
     else 
     {
-        switch (type)
+        switch (st.type)
         {
             case T_FILE:
-                loadBitmap(&icon, "file_icon_small.bmp");
-                draw_picture(context, icon, rect.start.x, rect.start.y);
+                draw_picture(context, contentRes[FILE_ICON_SMALL].pic, rect.start.x, rect.start.y);
                 break;
             case T_DIR:
-                loadBitmap(&icon, "folder_icon_small.bmp");
-                draw_picture(context, icon, rect.start.x, rect.start.y);
+                draw_picture(context, contentRes[FOLDER_ICON_SMALL].pic, rect.start.x, rect.start.y);
                 break;
         }
         puts_str(context, name, 0x0, rect.start.x + ICON_WIDTH_SMALL + 2, rect.start.y + 2);
@@ -202,7 +246,7 @@ void drawItem(Context context, char *name, short type, int n)
     freepic(&icon);
 }
     
-struct Icon iconlist[] = {
+struct Icon wndRes[] = {
     {"close.bmp", 3, 3},
     {"foldericon.bmp", 180, 3},
     {"viewingmode2.bmp", 400 - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
@@ -219,12 +263,18 @@ void drawFinderWnd(Context context) {
     draw_line(context, context.width - 1, context.height - 1, 0, context.height - 1, BORDERLINE_COLOR);
     draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
     fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, TOOLSBAR_COLOR);
+<<<<<<< HEAD:finder副本.c
     puts_str(context, "finder", 0, 200, 3);
     draw_iconlist(context, iconlist, sizeof(iconlist) / sizeof(ICON));
+=======
+    draw_iconlist(context, wndRes, sizeof(wndRes) / sizeof(ICON));
+>>>>>>> FETCH_HEAD:finder.c
 }
 
+void printItemList();
 void drawFinderContent(Context context)
 {
+<<<<<<< HEAD:finder副本.c
     struct fileItem *pointer;
     pointer = fileItemList;
     int counter = 0;
@@ -234,6 +284,32 @@ void drawFinderContent(Context context)
         pointer = pointer->next;
         counter++;
     }
+=======
+	struct fileItem *p;
+	printf(0, "listing contents\n");
+	freeFileItemList();
+	list(".");
+	printItemList();
+	p = fileItemList;
+	itemCounter = 0;
+	while (p != 0)
+	{
+		drawItem(context, p->name, p->st, p->pos);
+		p = p->next;
+	}
+}
+
+void printItemList()
+{
+	struct fileItem *p;
+	p = fileItemList;
+	while (p != 0)
+	{
+		printf(0, "%s\n", p->name);
+		p = p->next;
+	}
+
+>>>>>>> FETCH_HEAD:finder.c
 }
 
 Rect getPos(Context context, int n)
@@ -243,7 +319,7 @@ Rect getPos(Context context, int n)
         int m = context.width / (ICON_ITEM_WIDTH + ICON_ITEM_GAP_X);
         int r = n / m;
         int c = n % m;
-        int y_top = r * (ICON_ITEM_HEIGHT + ICON_ITEM_GAP_Y);
+        int y_top = r * (ICON_ITEM_HEIGHT + ICON_ITEM_GAP_Y) + TOPBAR_HEIGHT + TOOLSBAR_HEIGHT;
         int x_left = c * (ICON_ITEM_WIDTH + ICON_ITEM_GAP_X);
         return initRect(x_left, y_top, x_left + ICON_ITEM_WIDTH, y_top + ICON_ITEM_HEIGHT);    
     }
@@ -334,9 +410,14 @@ int main(int argc, char *argv[]) {
     ClickableManager cm;
     winid = init_context(&context, 400, 300);
     cm = initClickManager(context);
+<<<<<<< HEAD:finder副本.c
     load_iconlist(iconlist, sizeof(iconlist) / sizeof(ICON));
     drawItem(context, "1", T_DIR, 0);
     drawItem(context, "2", T_DIR, 1);
+=======
+    load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
+    load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
+>>>>>>> FETCH_HEAD:finder.c
     while (isRun) {
         getMsg(&msg);
         switch (msg.msg_type) {
@@ -350,6 +431,9 @@ int main(int argc, char *argv[]) {
             drawFinderWnd(context);
             drawFinderContent(context);
             updateWindow(winid, context.addr);
+            break;
+        case MSG_PARTIAL_UPDATE:
+            updatePartialWindow(winid, context.addr, msg.concrete_msg.msg_partial_update.x1, msg.concrete_msg.msg_partial_update.y1, msg.concrete_msg.msg_partial_update.x2, msg.concrete_msg.msg_partial_update.y2);
             break;
         case MSG_LPRESS:
             p = initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y);
