@@ -9,6 +9,7 @@
 #include "finder.h"
 #include "windowStyle.h"
 #include "clickable.h"
+#include "fcntl.h"
 
 #define BUTTON_WIDTH 32
 #define BUTTON_HEIGHT 32
@@ -58,6 +59,7 @@ int itemCounter = 0; // 第几个文件
 
 // 事件处理函数
 void addItemEvent(ClickableManager *cm, struct fileItem item);
+void addListEvent(ClickableManager *cm);
 struct fileItem * getFileItem(Point p); //跟据点击位置，获取文件信息
 
 // Handlers
@@ -73,9 +75,14 @@ void testHandlers();
 
 // 文件项列表相关操作
 void addFileItem(struct stat st, char *name, Rect pos){
-    struct fileItem *temp = (struct fileItem *)malloc(sizeof(struct fileItem));
+    //int i;
+	struct fileItem *temp = (struct fileItem *)malloc(sizeof(struct fileItem));
     temp->name = (char *)malloc(32 * sizeof(char));
     strcpy(temp->name, name);
+//    for (i = 0; name[i] != 0; i++)
+//    	{
+//    		printf(0, "%d : %c\n", i, name[i]);
+//    	}
     //printf(0, "copying name\n");
     temp->st = st;
     temp->pos = getPos(context, itemCounter);
@@ -100,7 +107,7 @@ void freeFileItemList(){
 // 文件信息相关操作
 char* fmtname(char *path)
 {
-  static char buf[DIRSIZ+1];
+  //static char buf[DIRSIZ+1];
   char *p;
 
   // Find first character after last slash.
@@ -108,12 +115,7 @@ char* fmtname(char *path)
     ;
   p++;
 
-  // Return blank-padded name.
-  if(strlen(p) >= DIRSIZ)
-    return p;
-  memmove(buf, p, strlen(p));
-  memset(buf+strlen(p), ' ', DIRSIZ-strlen(p));
-  return buf;
+  return p;
 }
 
 
@@ -241,7 +243,7 @@ void drawFinderWnd(Context context) {
     draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
     fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, TOOLSBAR_COLOR);
     puts_str(context, "finder", 0, 200, 3);
-    printf(0, "drawing window\n");
+    //printf(0, "drawing window\n");
     draw_iconlist(context, wndRes, sizeof(wndRes) / sizeof(ICON));
 }
 
@@ -249,10 +251,11 @@ void drawFinderWnd(Context context) {
 void drawFinderContent(Context context)
 {
 	struct fileItem *p;
-	printf(0, "listing contents\n");
+	//printf(0, "listing contents\n");
+	fill_rect(context, 0, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, context.width, context.height - (TOPBAR_HEIGHT + TOOLSBAR_HEIGHT), 0xFFFF);
 	freeFileItemList();
 	list(".");
-	printf(0, "listing complete!\n");
+	//printf(0, "listing complete!\n");
 	//printItemList();
 	p = fileItemList;
 	itemCounter = 0;
@@ -299,11 +302,9 @@ void addItemEvent(ClickableManager *cm, struct fileItem item)
 	switch(item.st.type)
 	{
 	case T_FILE:
-		createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
 		break;
 	case T_DIR:
-		createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
-		createClickable(cm, item.pos, MSG_DOUBLECLICK, h_enterDir);
+		createClickable(cm, item.pos, MSG_LPRESS, h_enterDir);
 		break;
 	default:
 		printf(0, "unknown file type!");
@@ -322,16 +323,25 @@ void addListEvent(ClickableManager *cm)
     }
 }
 
-struct fileItem * getFileItem(Point p)
+struct fileItem * getFileItem(Point point)
 {
-    struct fileItem *temp = (struct fileItem *)malloc(sizeof(struct fileItem));
-    return temp;
+    struct fileItem *p = fileItemList;
+    while (p != 0)
+    {
+    	if (isIn(point, p->pos))
+    	{
+    		return p;
+    	}
+    	p = p->next;
+    }
+    return 0;
 }
 
 
 // Handlers
 void enterDir(char *name)
 {
+	printf(0, "entering : %s\n", name);
 	if(chdir(name) < 0)
 		printf(2, "cannot cd %s\n", name);
 }
@@ -342,10 +352,26 @@ void h_enterDir(Point p)
 	enterDir(temp->name);
 }
 
+void cat(int fd)
+{
+  int n;
+  char buf[512];
+  while((n = read(fd, buf, sizeof(buf))) > 0)
+    write(1, buf, n);
+  if(n < 0){
+    printf(1, "cat: read error\n");
+    exit();
+  }
+}
+
 void newFile(char *name)
 {
-	int fd = open(name, 0);
-	write(fd, "new file!", 16);
+	int fd;
+	if((fd = open(name, O_CREATE)) < 0){
+	      printf(1, "cat: cannot open %s\n", name);
+	      exit();
+	}
+	//cat(fd);
 	close(fd);
 }
 
@@ -353,6 +379,8 @@ void h_newFile(Point p)
 {
 	newFile("newfile.txt");
 }
+
+
 
 void newFolder(char *newfolder)
 {
@@ -390,7 +418,7 @@ int main(int argc, char *argv[]) {
     cm = initClickManager(context);
     load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
     load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
-    //testHandlers();
+    testHandlers();
     while (isRun) {
         getMsg(&msg);
         switch (msg.msg_type) {
@@ -403,6 +431,8 @@ int main(int argc, char *argv[]) {
         case MSG_UPDATE:
             drawFinderWnd(context);
             drawFinderContent(context);
+            deleteClickable(&cm.left_click, initRect(0, 0, 400, 400));
+            addListEvent(&cm);
             updateWindow(winid, context.addr);
             break;
         case MSG_PARTIAL_UPDATE:
@@ -449,6 +479,12 @@ void testHandlers()
 	printf(0, "\n");
 	printf(0, "new a file:\n");
 	newFile("newfile.txt");
+	freeFileItemList();
+	list(".");
+	printItemList();
+	printf(0, "\n");
+	printf(0, "enter last folder:\n");
+	enterDir("..");
 	freeFileItemList();
 	list(".");
 	printItemList();
