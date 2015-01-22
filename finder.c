@@ -119,6 +119,7 @@ int containPoint(char *name)
 	while(*p != 0)
 	{
 		if (*p == '.') return 1;
+		p++;
 	}
 	return 0;
 }
@@ -241,6 +242,7 @@ void printItemList();
 void drawFinderContent(Context context)
 {
 	struct fileItem *p;
+	printf(0, "listing contents\n");
 	freeFileItemList();
 	list(".");
 	printItemList();
@@ -378,6 +380,9 @@ int main(int argc, char *argv[]) {
             drawFinderWnd(context);
             drawFinderContent(context);
             updateWindow(winid, context.addr);
+            break;
+        case MSG_PARTIAL_UPDATE:
+            updatePartialWindow(winid, context.addr, msg.concrete_msg.msg_partial_update.x1, msg.concrete_msg.msg_partial_update.y1, msg.concrete_msg.msg_partial_update.x2, msg.concrete_msg.msg_partial_update.y2);
             break;
         case MSG_LPRESS:
             p = initPoint(msg.concrete_msg.msg_mouse.x, msg.concrete_msg.msg_mouse.y);
