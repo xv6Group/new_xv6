@@ -61,12 +61,15 @@ void addItemEvent(ClickableManager *cm, struct fileItem item);
 struct fileItem * getFileItem(Point p); //跟据点击位置，获取文件信息
 
 // Handlers
-void enterDir(Point p);
-void newFile(Point p);
-void newFolder(Point p);
-void deleteFile(Point p);
-void chooseFile(Point p);
+void h_enterDir(Point p);
+void h_newFile(Point p);
+void h_newFolder(Point p);
+void h_deleteFile(Point p);
+void h_chooseFile(Point p);
 
+//测试相关函数
+void printItemList();
+void testHandlers();
 
 // 文件项列表相关操作
 void addFileItem(struct stat st, char *name, Rect pos){
@@ -164,7 +167,7 @@ void list(char *path)
         printf(1, "ls: cannot stat %s\n", buf);
         continue;
       }
-      if (containPoint(fmtname(buf)))
+      if (st.type == T_DIR || containPoint(fmtname(buf)))
       {
     	  addFileItem(st, fmtname(buf), getPos(context, itemCounter));
     	  itemCounter ++;
@@ -238,14 +241,14 @@ void drawFinderWnd(Context context) {
     draw_iconlist(context, wndRes, sizeof(wndRes) / sizeof(ICON));
 }
 
-void printItemList();
+
 void drawFinderContent(Context context)
 {
 	struct fileItem *p;
-	printf(0, "listing contents\n");
+	//printf(0, "listing contents\n");
 	freeFileItemList();
 	list(".");
-	printItemList();
+	//printItemList();
 	p = fileItemList;
 	itemCounter = 0;
 	while (p != 0)
@@ -291,11 +294,11 @@ void addItemEvent(ClickableManager *cm, struct fileItem item)
 	switch(item.st.type)
 	{
 	case T_FILE:
-		createClickable(cm, item.pos, MSG_LPRESS, chooseFile);
+		createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
 		break;
 	case T_DIR:
-		createClickable(cm, item.pos, MSG_LPRESS, chooseFile);
-		createClickable(cm, item.pos, MSG_DOUBLECLICK, enterDir);
+		createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
+		createClickable(cm, item.pos, MSG_DOUBLECLICK, h_enterDir);
 		break;
 	default:
 		printf(0, "unknown file type!");
@@ -322,33 +325,48 @@ struct fileItem * getFileItem(Point p)
 
 
 // Handlers
-void enterDir(Point p)
+void enterDir(char *name)
 {
-	struct fileItem *temp = getFileItem(p);
-	if(chdir(temp->name) < 0)
-	  printf(2, "cannot cd %s\n", temp->name);
+	if(chdir(name) < 0)
+		printf(2, "cannot cd %s\n", name);
 }
 
-void newFile(Point p)
+void h_enterDir(Point p)
 {
-	int fd = open("newfile.txt", 0);
+	struct fileItem *temp = getFileItem(p);
+	enterDir(temp->name);
+}
+
+void newFile(char *name)
+{
+	int fd = open(name, 0);
+	write(fd, "new file!", 16);
 	close(fd);
 }
 
-void newFolder(Point p)
+void h_newFile(Point p)
 {
-	struct fileItem *temp = getFileItem(p);
-    if(mkdir(temp->name) < 0){
-      printf(2, "mkdir: %s failed to create\n", temp->name);
-    }
+	newFile("newfile.txt");
 }
 
-void deleteFile(Point p)
+void newFolder(char *newfolder)
+{
+	if(mkdir(newfolder) < 0){
+		 printf(0, "mkdir: %s failed to create\n", newfolder);
+	}
+}
+
+void h_newFolder(Point p)
+{
+	newFolder("newFolder");
+}
+
+void h_deleteFile(Point p)
 {
 
 }
 
-void chooseFile(Point p)
+void h_chooseFile(Point p)
 {
 	struct fileItem *temp = getFileItem(p);
 	temp->chosen = 1;
@@ -367,6 +385,7 @@ int main(int argc, char *argv[]) {
     cm = initClickManager(context);
     load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
     load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
+    testHandlers();
     while (isRun) {
         getMsg(&msg);
         switch (msg.msg_type) {
@@ -402,6 +421,32 @@ int main(int argc, char *argv[]) {
     }
     free_context(&context, winid);
     exit();
+}
+
+void testHandlers()
+{
+	freeFileItemList();
+	list(".");
+	printf(0, "original list:\n");
+	printItemList();
+	printf(0, "\n");
+	printf(0, "new a folder:\n");
+	newFolder("newfolder");
+	freeFileItemList();
+	list(".");
+	printItemList();
+	printf(0, "\n");
+	printf(0, "enter new folder:\n");
+	enterDir("newfolder");
+	freeFileItemList();
+	list(".");
+	printItemList();
+	printf(0, "\n");
+	printf(0, "new a file:\n");
+	newFile("newfile.txt");
+	freeFileItemList();
+	list(".");
+	printItemList();
 }
 
 
