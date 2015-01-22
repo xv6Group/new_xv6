@@ -160,7 +160,12 @@ _desktop: desktop.o $(GUILIB) $(ULIB)
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
-_shell: shell.o $(GUILIB) $(ULIB)
+_shell_gui: shell_gui.o $(GUILIB) $(ULIB)
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
+	$(OBJDUMP) -S $@ > $*.asm
+	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
+
+_shell_sh: shell_sh.o $(GUILIB) $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
@@ -201,7 +206,8 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_desktop\
-	_shell\
+	_shell_gui\
+	_shell_sh\
 	_finder\
 	_touch\
 	_uptime\

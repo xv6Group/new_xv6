@@ -17,7 +17,7 @@ ICON iconlist[] = {
 void shellinit(Point point)
 {
     int pid;
-    char* shell_argv[] = { "shell", 0 };
+    char* shell_argv[] = { "shell_gui", 0 };
 
     printf(1, "init shell: starting shell\n");
     pid = fork();
@@ -28,7 +28,7 @@ void shellinit(Point point)
     }
     if (pid == 0) 
     {
-        exec("shell", shell_argv);
+        exec("shell_gui", shell_argv);
         printf(1, "init shell: exec shell failed\n");
         exit();
     }
