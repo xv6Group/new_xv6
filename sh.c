@@ -13,6 +13,10 @@
 
 #define MAXARGS 10
 
+#define COMMANDNUM 22
+char *command[COMMANDNUM] = { "cat", "cd", "cp", "echo", "forktest", "grep", "init", "kill", "ln", "ls",
+"mkdir", "ren", "rm", "splice", "sh", "stressfs", "usertests", "editor", "wc", "zombie", "cal" };
+
 struct cmd {
   int type;
 };
@@ -53,6 +57,33 @@ int fork1(void);  // Fork but panics on failure.
 void panic(char*);
 struct cmd *parsecmd(char*);
 
+// Execute failed. Find similar cmd.
+void
+findcmd(char *cmd)
+{
+	int i, ismatched = 0;
+	for (i = 0; i < COMMANDNUM; i++){
+		char *yourcmd = cmd;
+		int j, matchcharnum = 0;
+		int flag[MAXARGS] = { 0 };
+		for (; *yourcmd; yourcmd++){
+			for (j = 0; command[i][j]; j++){
+				if (*yourcmd == command[i][j] && flag[j] == 0){
+					matchcharnum++;
+					flag[j] = 1;
+					break;
+				}
+			}
+		}
+		if (matchcharnum >= 2){
+			if (ismatched == 0)
+				printf(2, "'%s' exec failed. Do you want to enter:\n", cmd);
+			ismatched = 1;
+			printf(2, "command '%s'\n", command[i]);
+		}
+	}
+}
+
 // Execute cmd.  Never returns.
 void
 runcmd(struct cmd *cmd)
@@ -63,7 +94,7 @@ runcmd(struct cmd *cmd)
   struct listcmd *lcmd;
   struct pipecmd *pcmd;
   struct redircmd *rcmd;
-
+  int i;
   if(cmd == 0)
     exit();
   
@@ -72,12 +103,27 @@ runcmd(struct cmd *cmd)
     panic("runcmd");
 
   case EXEC:
-    ecmd = (struct execcmd*)cmd;
-    if(ecmd->argv[0] == 0)
-      exit();
-    exec(ecmd->argv[0], ecmd->argv);
-    printf(2, "exec %s failed\n", ecmd->argv[0]);
-    break;
+	
+    	ecmd = (struct execcmd*)cmd;
+	if (ecmd->argv[0] == 0)
+		exit();
+	// get the right place and point to currentDir
+	for (i = 0; ecmd->argv[i]; i++);
+	//ecmd->argv[i] = currentDir;
+	ecmd->argv[i] = 0;
+    //以下为添加或者修改的部分，原来只有exec(ecmd->argv[0], ecmd->argv);
+    for (i = 0; ecmd->argv[0][i]; i++);
+	char *newcommand=malloc((i+1)*sizeof(char));
+	newcommand[0]='/';
+	for(i=0;ecmd->argv[0][i]; i++){newcommand[i+1]=ecmd->argv[0][i];}
+	exec(newcommand, ecmd->argv);
+//
+
+	exec(ecmd->argv[0], ecmd->argv);
+	if (ecmd->argv[0][0] == 'v' && ecmd->argv[0][1] == 'i' && ecmd->argv[0][2] == 'm' && ecmd->argv[0][3] == 0)
+		break;
+	findcmd(ecmd->argv[0]);
+	break;
 
   case REDIR:
     rcmd = (struct redircmd*)cmd;
@@ -261,7 +307,7 @@ backcmd(struct cmd *subcmd)
 // Parsing
 
 char whitespace[] = " \t\r\n\v";
-char symbols[] = "<|>&;()";
+char symbols[] = "<|>&;";
 
 int
 gettoken(char **ps, char *es, char **q, char **eq)
@@ -279,8 +325,6 @@ gettoken(char **ps, char *es, char **q, char **eq)
   case 0:
     break;
   case '|':
-  case '(':
-  case ')':
   case ';':
   case '&':
   case '<':
