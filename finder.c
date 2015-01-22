@@ -217,7 +217,7 @@ void drawItem(Context context, char *name, struct stat st, Rect rect)
         indent = ((ICON_ITEM_WIDTH / 8) - strlen(name)) * 4;
         //printf(0,"indent: %d  filenamelen: %d\n", indent, strlen(name));
         if (indent < 0) indent = 0;
-        puts_str(context, name, 0x0, rect.start.x + indent, rect.start.y + ICON_HEIGHT_BIG + 2);
+        puts_str(context, name, 0x0, rect.start.x + indent, rect.start.y + ICON_HEIGHT_BIG + 8);
     }
     else 
     {
@@ -236,7 +236,7 @@ void drawItem(Context context, char *name, struct stat st, Rect rect)
     
 struct Icon wndRes[] = {
     {"close.bmp", 3, 3},
-    {"folder_icon_small.bmp", WINDOW_WIDTH / 2 - 25, 3},
+    {"foldericon.bmp", WINDOW_WIDTH / 2 - 22, 3},
     {"viewingmode2.bmp", WINDOW_WIDTH - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
     {"viewingmode1.bmp", WINDOW_WIDTH - (2 * BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
     {"createfolder.bmp", 5, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
@@ -253,7 +253,7 @@ void drawFinderWnd(Context context) {
     draw_line(context, context.width - 1, context.height - 1, 0, context.height - 1, BORDERLINE_COLOR);
     draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
     fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, TOOLSBAR_COLOR);
-    puts_str(context, "finder", 0, 200, 3);
+    puts_str(context, "finder", 0, WINDOW_WIDTH / 2, 3);
     //printf(0, "drawing window\n");
     draw_iconlist(context, wndRes, sizeof(wndRes) / sizeof(ICON));
 }
@@ -296,7 +296,7 @@ Rect getPos(Context context, int n)
         int m = context.width / (ICON_ITEM_WIDTH + ICON_ITEM_GAP_X);
         int r = n / m;
         int c = n % m;
-        int y_top = r * (ICON_ITEM_HEIGHT + ICON_ITEM_GAP_Y) + TOPBAR_HEIGHT + TOOLSBAR_HEIGHT;
+        int y_top = r * (ICON_ITEM_HEIGHT + ICON_ITEM_GAP_Y) + TOPBAR_HEIGHT + TOOLSBAR_HEIGHT + ICON_ITEM_GAP_Y;
         int x_left = c * (ICON_ITEM_WIDTH + ICON_ITEM_GAP_X);
         return initRect(x_left, y_top, x_left + ICON_ITEM_WIDTH, y_top + ICON_ITEM_HEIGHT);    
     }
