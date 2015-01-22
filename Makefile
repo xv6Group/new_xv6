@@ -196,6 +196,14 @@ UPROGS=\
 	_desktop\
 	_shell\
 	_finder\
+	_touch\
+	_uptime\
+	_cp\
+	_editor\
+	_mv\
+	_ren\
+	_splice\
+	_cal\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS) hankaku.txt close.bmp foldericon.bmp viewingmode1.bmp viewingmode2.bmp createfile.bmp createfolder.bmp up.bmp gamecenter.bmp folder_icon_big.bmp folder_icon_small.bmp file_icon_big.bmp file_icon_small.bmp bg.bmp music.bmp notes.bmp setting.bmp
@@ -270,6 +278,7 @@ EXTRA=\
 	printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
+	touch.c cp.c uptime.c mv.c editor.c script.c cal.c\
 
 dist:
 	rm -rf dist

@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     fill_rect(context, 0, 0, context.width, context.height, 0xffff);
     puts_str(context, "desktop: welcome", 0x0, 0, 0);
 //加载有点慢，先注释掉了。
-//    PICNODE pic1, pic2, pic3, pic4;
+//    PICNODE pic1, pic2, pic3, pic4, background;
 //    loadBitmap(&pic1, "music.bmp");
 //    loadBitmap(&pic2, "gamecenter.bmp");
 //    loadBitmap(&pic3, "notes.bmp");

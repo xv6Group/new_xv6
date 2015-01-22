@@ -14,6 +14,40 @@
 #include "proc.h"
 #include "x86.h"
 
+//yi xia shi hou jia de
+#define COMMANDMAXLENDTH 10//命令的最长长度
+#define COMMANDNUM 21//命令的个数
+char *command[COMMANDNUM] = { "cat", "cd", "cp", "echo", "forktest", "grep", "help", "init", "kill", "ln", "ls",
+"mkdir", "rename", "rm", "script", "sh", "stressfs", "usertests", "vim", "wc", "zombie" };
+int color[16] = { 0x0000, 0x0100, 0x0200, 0x0300, 0x0400, 0x0500, 0x0600, 0x0700,
+0x0800, 0x0900, 0x0a00, 0x0b00, 0x0c00, 0x0d00, 0x0e00, 0x0f00 };
+char matchinput[COMMANDMAXLENDTH];
+int matchinputlen = 0;
+int iskbdtype = 0;
+int commandfilled = 1;
+int historyno = -1;
+char matchcmd[COMMANDNUM][COMMANDMAXLENDTH];
+int matchcmdno;
+int matchcmdnum;
+int posoffset = 0;
+
+#define INPUT_BUF 128
+struct {
+	struct spinlock lock;
+	char buf[INPUT_BUF];
+	uint r;  // Read index
+	uint w;  // Write index
+	uint e;  // Edit index
+} input;
+
+struct {
+	char bufarray[100][INPUT_BUF];
+	uint top;
+	uint base;
+} history;
+
+//yi shang shi hou jia de
+
 static void consputc(int);
 
 static int panicked = 0;
@@ -126,37 +160,205 @@ panic(char *s)
 #define CRTPORT 0x3d4
 static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
 
+//修改开始
+
+//新增
+// 得到匹配字符串
+// 似乎是用于补全命令的，全局变量matchinput是当前输入的字符
+// 将matchcmd数组变成所有匹配的命令的集合
+// 返回值为匹配的命令个数
+int
+getmatchcmd(char matchcmd[][COMMANDMAXLENDTH])
+{
+	int n;
+	int matchno;
+	for (n = 0, matchno = 0; n < COMMANDNUM; n++) {
+		if (strmatch(command[n], matchinput)) {
+			memset(matchcmd[matchno], 0, sizeof(matchcmd[matchno]));
+			strncpy(matchcmd[matchno++], command[n], strlen(command[n]));
+		}
+	}
+	return matchno;
+}
+//新增结束
+
 static void
 cgaputc(int c)
 {
-  int pos;
-  
-  // Cursor position: col + 80*row.
-  outb(CRTPORT, 14);
-  pos = inb(CRTPORT+1) << 8;
-  outb(CRTPORT, 15);
-  pos |= inb(CRTPORT+1);
+	int pos;
 
-  if(c == '\n')
-    pos += 80 - pos%80;
-  else if(c == BACKSPACE){
-    if(pos > 0) --pos;
-  } else
-    crt[pos++] = (c&0xff) | 0x0700;  // black on white
-  
-  if((pos/80) >= 24){  // Scroll up.
-    memmove(crt, crt+80, sizeof(crt[0])*23*80);
-    pos -= 80;
-    memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
-  }
-  
-  outb(CRTPORT, 14);
-  outb(CRTPORT+1, pos>>8);
-  outb(CRTPORT, 15);
-  outb(CRTPORT+1, pos);
-  crt[pos] = ' ' | 0x0700;
+	// Cursor position: col + 80*row.
+	outb(CRTPORT, 14);
+	pos = inb(CRTPORT + 1) << 8;
+	outb(CRTPORT, 15);
+	pos |= inb(CRTPORT + 1);
+
+	int i;
+	if (iskbdtype && posoffset == 0 && c != 0xe4 && c != 0xe5){
+		if (pos >= 0){
+			for (i = pos; crt[i] != ((' ' & 0xff) | 0x0700); i++)
+				crt[i] = ' ' | 0x0700;
+		}
+	}
+
+	// 换行符
+	if (c == '\n')
+		pos += 80 - pos % 80;
+	// 退格符
+	else if (c == BACKSPACE){
+		if (pos > 0){
+			--pos;
+			if (iskbdtype && posoffset > 0){
+				memset(matchinput, 0, strlen(matchinput));
+				matchinputlen = 0;
+				// 移动光标后的字符
+				for (i = 0; i < posoffset; i++){
+					crt[pos + i] = crt[pos + i + 1];
+				}
+			}
+			crt[pos + posoffset] = ' ' | 0x0700;
+		}
+	}
+	// 普通字符
+	else if (c != 0xe2 && c != 0xe3 && c != 0xe4 && c != 0xe5){
+		if (iskbdtype && posoffset > 0){
+			memset(matchinput, 0, strlen(matchinput));
+			matchinputlen = 0;
+			for (i = 0; i < posoffset; i++){
+				crt[pos + posoffset - i] = crt[pos + posoffset - i - 1];
+			}
+		}
+		crt[pos] = (c & 0xff) | color[7 % 16];  // black on white
+		pos++;
+	}
+
+	if (iskbdtype){
+		// 空格或回车后准备重新计算匹配字符串
+		if (c == '\n' || c == ' '){
+			memset(matchinput, 0, strlen(matchinput));
+			matchinputlen = 0;
+			commandfilled = 1;
+			if (c == '\n') posoffset = 0;
+		}
+		// 退格的匹配计算
+		else if (c == BACKSPACE){
+			commandfilled = 1;
+			if (matchinputlen > 0)
+				matchinputlen--;
+			if (matchinputlen >= 0 && matchinputlen < COMMANDMAXLENDTH - 1)
+				matchinput[matchinputlen] = '\0';
+			if (matchinputlen > 0 && matchinputlen < COMMANDMAXLENDTH){
+				matchcmdnum = getmatchcmd(matchcmd);
+				matchcmdno = 0;
+				if (matchcmdnum > 0){
+					for (i = matchinputlen; i < strlen(matchcmd[0]); i++){
+						crt[pos + i - matchinputlen] = (matchcmd[0][i] & 0xff) | 0x0800;
+						commandfilled = 0;
+					}
+				}
+			}
+		}
+		else{
+			// 上下左右键监听
+			if (c == 0xe2 || c == 0xe3 || c == 0xe4 || c == 0xe5){
+				// 处于匹配字符串模式，监听为匹配字符串的监听
+				if (matchcmdnum > 0 && !commandfilled){
+					// 翻看可能命令
+					if (c == 0xe2){
+						matchcmdno = (matchcmdno + matchcmdnum - 1) % matchcmdnum;
+					}
+					else if (c == 0xe3){
+						matchcmdno = (matchcmdno + 1) % matchcmdnum;
+					}
+					// 补全命令
+					else if (c == 0xe5){
+						for (i = pos; crt[i] != ((' ' & 0xff) | 0x0700); i++){
+							crt[i] = (crt[i] & 0xff) | 0x0700;
+							matchinput[matchinputlen++] = crt[i] & 0xff;
+							input.buf[input.e++ % INPUT_BUF] = crt[i] & 0xff;
+						}
+						pos = i;
+						commandfilled = 1;
+					}
+				}
+				// 处于翻看历史记录模式
+				else if (commandfilled){
+					// 寻找历史记录
+					if (c == 0xe2 || c == 0xe3){
+						int posno = (history.top - 1 - historyno + 100) % 100;
+						if (c == 0xe2){
+							if (posno != history.base)
+								historyno = (historyno + 1) % 100;
+						}
+						else{
+							if (posno != (history.top - 1 + 100) % 100)
+								historyno = (historyno - 1) % 100;
+						}
+						posno = (history.top - 1 - historyno + 100) % 100;
+						if (history.bufarray[posno][0] != '\0'){
+							memset(matchinput, 0, strlen(matchinput));
+							matchinputlen = 0;
+							while (input.e > input.w){
+								crt[(--pos) + posoffset] = ' ' | 0x0700;
+								input.buf[--input.e % INPUT_BUF] = '\0';
+							}
+							pos += posoffset;
+							posoffset = 0;
+							int j;
+							for (j = 0; j < strlen(history.bufarray[posno]); j++){
+								crt[pos++] = (history.bufarray[posno][j] & 0xff) | 0x0700;
+								input.buf[input.e++ % INPUT_BUF] = history.bufarray[posno][j];
+							}
+						}
+					}
+					// 修改已输入字符串
+					else if (c == 0xe4){
+						if (input.e > input.w + posoffset){
+							pos--;
+							posoffset++;
+						}
+					}
+					else if (c == 0xe5){
+						if (posoffset > 0){
+							pos++;
+							posoffset--;
+						}
+					}
+				}
+			}
+			else if (posoffset == 0){
+				commandfilled = 1;
+				if (matchinputlen < COMMANDMAXLENDTH - 1)
+					matchinput[matchinputlen] = c;
+				matchinputlen++;
+			}
+			// 命令输入提示
+			if (posoffset == 0 && matchinputlen > 0 && matchinputlen < COMMANDMAXLENDTH && c != 0xe4 && c != 0xe5){
+				if (c != 0xe2 && c != 0xe3){
+					matchcmdnum = getmatchcmd(matchcmd);
+					matchcmdno = 0;
+				}
+				if (matchcmdnum > 0){
+					for (i = matchinputlen; i < strlen(matchcmd[matchcmdno]); i++){
+						crt[pos + i - matchinputlen] = (matchcmd[matchcmdno][i] & 0xff) | 0x0800;
+						commandfilled = 0;
+					}
+				}
+			}
+		}
+	}
+
+	if ((pos / 80) >= 24){  // Scroll up.
+		memmove(crt, crt + 80, sizeof(crt[0]) * 23 * 80);
+		pos -= 80;
+		memset(crt + pos, 0, sizeof(crt[0])*(24 * 80 - pos));
+	}
+
+	outb(CRTPORT, 14);
+	outb(CRTPORT + 1, pos >> 8);
+	outb(CRTPORT, 15);
+	outb(CRTPORT + 1, pos);
 }
-
 void
 consputc(int c)
 {
@@ -173,55 +375,73 @@ consputc(int c)
   cgaputc(c);
 }
 
-#define INPUT_BUF 128
-struct {
-  struct spinlock lock;
-  char buf[INPUT_BUF];
-  uint r;  // Read index
-  uint w;  // Write index
-  uint e;  // Edit index
-} input;
-
 #define C(x)  ((x)-'@')  // Control-x
 
 void
-consoleintr(int (*getc)(void))
+consoleintr(int (*getc)(void), int type)
 {
   int c;
 
   acquire(&input.lock);
-  while((c = getc()) >= 0){
-    switch(c){
-    case C('P'):  // Process listing.
-      procdump();
-      break;
-    case C('U'):  // Kill line.
-      while(input.e != input.w &&
-            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
-        input.e--;
-        consputc(BACKSPACE);
-      }
-      break;
-    case C('H'): case '\x7f':  // Backspace
-      if(input.e != input.w){
-        input.e--;
-        consputc(BACKSPACE);
-      }
-      break;
-    default:
-      if(c != 0 && input.e-input.r < INPUT_BUF){
-        c = (c == '\r') ? '\n' : c;
-        input.buf[input.e++ % INPUT_BUF] = c;
-        consputc(c);
-        if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
-          input.w = input.e;
-          wakeup(&input.r);
-        }
-      }
-      break;
-    }
-  }
-  release(&input.lock);
+	iskbdtype = type;
+	while ((c = getc()) >= 0){
+		switch (c){
+		case C('P'):  // Process listing.
+			procdump();
+			break;
+		case C('U'):  // Kill line.
+			while (input.e != input.w &&
+				input.buf[(input.e - 1) % INPUT_BUF] != '\n'){
+				input.e--;
+				consputc(BACKSPACE);
+			}
+			break;
+		case C('H'): case '\x7f':  // Backspace
+			if (input.e - posoffset != input.w){
+				input.e--;
+				int i;
+				for (i = 0; i < posoffset; i++)
+					input.buf[(input.e - posoffset + i) % INPUT_BUF] = input.buf[(input.e - posoffset + i + 1) % INPUT_BUF];
+				consputc(BACKSPACE);
+			}
+			break;
+		default:
+			if (c != 0 && input.e - input.r < INPUT_BUF){
+				c = (c == '\r') ? '\n' : c;
+				if (c != 0xe2 && c != 0xe3 && c != 0xe4 && c != 0xe5){
+					if (c != '\n' && iskbdtype && posoffset > 0){
+						int i;
+						for (i = 0; i < posoffset; i++)
+							input.buf[(input.e - i) % INPUT_BUF] = input.buf[(input.e - i - 1) % INPUT_BUF];
+						input.buf[(input.e - posoffset) % INPUT_BUF] = c;
+						input.e++;
+					}
+					else
+						input.buf[input.e++ % INPUT_BUF] = c;
+				}
+				consputc(c);
+				if (c == '\n' || c == C('D') || input.e == input.r + INPUT_BUF){
+					if (c == '\n'){
+						uint i = 0;
+						if (input.w != input.e)
+							memset(history.bufarray[history.top], 0, sizeof(history.bufarray[history.top]));
+						for (i = input.w; i < input.e - 1; i++){
+							history.bufarray[history.top][i - input.w] = input.buf[i % INPUT_BUF];
+							historyno = -1;
+						}
+						if (input.w != input.e)
+							history.top = (history.top + 1) % 100;
+						if ((history.top - history.base + 100) % 100 == 1 && history.bufarray[history.top][0] != 0)
+							history.base = history.top;
+					}
+					input.w = input.e;
+					wakeup(&input.r);
+				}
+			}
+			break;
+		}
+	}
+	release(&input.lock);
 }
 
 int
@@ -291,3 +511,18 @@ consoleinit(void)
   ioapicenable(IRQ_KBD, 0);
 }
 
+int
+strmatch(const char *s, const char *m)
+{
+  for(; *s && *m;){
+    if(*s == *m){
+      m++;
+      s++;
+    }
+    else
+      return 0;
+  }
+  if(*m == 0)
+    return 1;
+  return 0;
+}
