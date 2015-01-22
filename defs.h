@@ -1,3 +1,4 @@
+struct abuf;
 struct buf;
 struct context;
 struct file;
@@ -59,6 +60,14 @@ int             writei(struct inode*, char*, uint, uint);
 void            ideinit(void);
 void            ideintr(void);
 void            iderw(struct buf*);
+
+// pci.c
+void            soundinit(void);
+
+// audio.c
+void            soundcardinit(uchar, uchar, uchar);
+void            soundInterrupt(void);
+void            setSoundSampleRate(uint samplerate);
 
 // ioapic.c
 void            ioapicenable(int irq, int cpu);

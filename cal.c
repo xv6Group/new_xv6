@@ -89,7 +89,7 @@ char** split(char* src)
 }
 
 char precede(char x, char y){
-  int i, j;
+  int i=0, j=0;
   
   switch (x){
   case '+':i = 3; break;
@@ -184,7 +184,7 @@ char* cal3(char* a1, char* a2, char* s)
 {
   char* ret = (char*)malloc(MAXNUM * sizeof(char));
   char* r = (char*)malloc(MAXNUM * sizeof(char));
-  int res;
+  int res = 0;
   int i;
   int r1 = chars_to_int(a1);
   int r2 = chars_to_int(a2);

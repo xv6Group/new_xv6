@@ -34,7 +34,8 @@ main(void)
   binit();         // buffer cache
   fileinit();      // file table
   iinit();         // inode cache
-  ideinit();       // disk 
+  ideinit();       // disk
+  soundinit();     // audio
   vesamodeinit();
   msgqueueinit();
   msgtableinit();
