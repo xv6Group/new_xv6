@@ -10,16 +10,21 @@
 #include "windowStyle.h"
 #include "clickable.h"
 
+#define WINDOW_WIDTH 600
+#define WINDOW_HEIGHT 450
+
 #define BUTTON_WIDTH 32
 #define BUTTON_HEIGHT 32
 
 #define ICON_STYLE 1
 #define LIST_STYLE 2
 
-#define ICON_ITEM_WIDTH 50
-#define ICON_ITEM_HEIGHT 70
-#define ICON_ITEM_GAP_X 15
-#define ICON_ITEM_GAP_Y 15
+#define ICON_ITEM_WIDTH 100
+#define ICON_ITEM_HEIGHT 100
+#define ICON_ITEM_GAP_X 30
+#define ICON_ITEM_GAP_Y 30
+#define ICON_ITEM_OFFSET_X 25
+#define ICON_ITEM_OFFSET_Y 5
 
 #define LIST_ITEM_HEIGHT 20
 
@@ -200,13 +205,17 @@ void drawItem(Context context, char *name, struct stat st, Rect rect)
         switch (st.type)
         {
             case T_FILE:
-                draw_picture(context, contentRes[FILE_ICON_BIG].pic, rect.start.x, rect.start.y);
+                draw_picture(context, contentRes[FILE_ICON_BIG].pic, rect.start.x + ICON_ITEM_OFFSET_X, rect.start.y + ICON_ITEM_OFFSET_Y);
                 break;
             case T_DIR:
-                draw_picture(context, contentRes[FOLDER_ICON_BIG].pic, rect.start.x, rect.start.y);
+                draw_picture(context, contentRes[FOLDER_ICON_BIG].pic, rect.start.x + ICON_ITEM_OFFSET_X, rect.start.y + ICON_ITEM_OFFSET_Y);
                 break;
         }
-        puts_str(context, name, 0x0, rect.start.x + 3, rect.start.y + ICON_HEIGHT_BIG + 2);
+        int indent;
+        indent = ((ICON_ITEM_WIDTH / 8) - strlen(name)) * 4;
+        //printf(0,"indent: %d  filenamelen: %d\n", indent, strlen(name));
+        if (indent < 0) indent = 0;
+        puts_str(context, name, 0x0, rect.start.x + indent, rect.start.y + ICON_HEIGHT_BIG + 2);
     }
     else 
     {
@@ -225,11 +234,13 @@ void drawItem(Context context, char *name, struct stat st, Rect rect)
     
 struct Icon wndRes[] = {
     {"close.bmp", 3, 3},
-    {"foldericon.bmp", 180, 3},
-    {"viewingmode2.bmp", 400 - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
-    {"viewingmode1.bmp", 400 - (2 * BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"folder_icon_small.bmp", WINDOW_WIDTH / 2 - 25, 3},
+    {"viewingmode2.bmp", WINDOW_WIDTH - (BUTTON_WIDTH + 5), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"viewingmode1.bmp", WINDOW_WIDTH - (2 * BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
     {"createfolder.bmp", 5, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
-    {"createfile.bmp", (BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)}
+    {"createfile.bmp", (BUTTON_WIDTH + 6), TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"up.bmp", 2 * BUTTON_WIDTH + 100, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)},
+    {"trash.bmp", 3 * BUTTON_WIDTH + 110, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT - (BUTTON_HEIGHT + 3)}
 };
 
 void drawFinderWnd(Context context) {
@@ -240,7 +251,7 @@ void drawFinderWnd(Context context) {
     draw_line(context, context.width - 1, context.height - 1, 0, context.height - 1, BORDERLINE_COLOR);
     draw_line(context, 0, context.height - 1, 0, 0, BORDERLINE_COLOR);
     fill_rect(context, 1, 1, context.width - 2, TOPBAR_HEIGHT + TOOLSBAR_HEIGHT, TOOLSBAR_COLOR);
-    puts_str(context, "finder", 0, 200, 3);
+    puts_str(context, "finder", 0, WINDOW_WIDTH / 2, 5);
     printf(0, "drawing window\n");
     draw_iconlist(context, wndRes, sizeof(wndRes) / sizeof(ICON));
 }
@@ -248,20 +259,20 @@ void drawFinderWnd(Context context) {
 
 void drawFinderContent(Context context)
 {
-	struct fileItem *p;
-	printf(0, "listing contents\n");
-	freeFileItemList();
-	list(".");
-	printf(0, "listing complete!\n");
-	//printItemList();
-	p = fileItemList;
-	itemCounter = 0;
-	while (p != 0)
-	{
-		//printf(0, "draw item\n");
-		drawItem(context, p->name, p->st, p->pos);
-		p = p->next;
-	}
+    struct fileItem *p;
+    printf(0, "listing contents\n");
+    freeFileItemList();
+    list(".");
+    printf(0, "listing complete!\n");
+    //printItemList();
+    p = fileItemList;
+    itemCounter = 0;
+    while (p != 0)
+    {
+        //printf(0, "draw item\n");
+        drawItem(context, p->name, p->st, p->pos);
+        p = p->next;
+    }
 }
 
 void printItemList()
@@ -296,18 +307,18 @@ Rect getPos(Context context, int n)
 // 事件处理相关操作
 void addItemEvent(ClickableManager *cm, struct fileItem item)
 {
-	switch(item.st.type)
-	{
-	case T_FILE:
-		createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
-		break;
-	case T_DIR:
-		createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
-		createClickable(cm, item.pos, MSG_DOUBLECLICK, h_enterDir);
-		break;
-	default:
-		printf(0, "unknown file type!");
-	}
+    switch(item.st.type)
+    {
+    case T_FILE:
+        createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
+        break;
+    case T_DIR:
+        createClickable(cm, item.pos, MSG_LPRESS, h_chooseFile);
+        createClickable(cm, item.pos, MSG_DOUBLECLICK, h_enterDir);
+        break;
+    default:
+        printf(0, "unknown file type!");
+    }
 }
 
 void addListEvent(ClickableManager *cm)
@@ -332,38 +343,38 @@ struct fileItem * getFileItem(Point p)
 // Handlers
 void enterDir(char *name)
 {
-	if(chdir(name) < 0)
-		printf(2, "cannot cd %s\n", name);
+    if(chdir(name) < 0)
+        printf(2, "cannot cd %s\n", name);
 }
 
 void h_enterDir(Point p)
 {
-	struct fileItem *temp = getFileItem(p);
-	enterDir(temp->name);
+    struct fileItem *temp = getFileItem(p);
+    enterDir(temp->name);
 }
 
 void newFile(char *name)
 {
-	int fd = open(name, 0);
-	write(fd, "new file!", 16);
-	close(fd);
+    int fd = open(name, 0);
+    write(fd, "new file!", 16);
+    close(fd);
 }
 
 void h_newFile(Point p)
 {
-	newFile("newfile.txt");
+    newFile("newfile.txt");
 }
 
 void newFolder(char *newfolder)
 {
-	if(mkdir(newfolder) < 0){
-		 printf(0, "mkdir: %s failed to create\n", newfolder);
-	}
+    if(mkdir(newfolder) < 0){
+         printf(0, "mkdir: %s failed to create\n", newfolder);
+    }
 }
 
 void h_newFolder(Point p)
 {
-	newFolder("newFolder");
+    newFolder("newFolder");
 }
 
 void h_deleteFile(Point p)
@@ -386,7 +397,7 @@ int main(int argc, char *argv[]) {
     Point p;
 
     ClickableManager cm;
-    winid = init_context(&context, 400, 300);
+    winid = init_context(&context, WINDOW_WIDTH, WINDOW_HEIGHT);
     cm = initClickManager(context);
     load_iconlist(wndRes, sizeof(wndRes) / sizeof(ICON));
     load_iconlist(contentRes, sizeof(contentRes) / sizeof(ICON));
@@ -430,28 +441,28 @@ int main(int argc, char *argv[]) {
 
 void testHandlers()
 {
-	freeFileItemList();
-	list(".");
-	printf(0, "original list:\n");
-	printItemList();
-	printf(0, "\n");
-	printf(0, "new a folder:\n");
-	newFolder("newfolder");
-	freeFileItemList();
-	list(".");
-	printItemList();
-	printf(0, "\n");
-	printf(0, "enter new folder:\n");
-	enterDir("newfolder");
-	freeFileItemList();
-	list(".");
-	printItemList();
-	printf(0, "\n");
-	printf(0, "new a file:\n");
-	newFile("newfile.txt");
-	freeFileItemList();
-	list(".");
-	printItemList();
+    freeFileItemList();
+    list(".");
+    printf(0, "original list:\n");
+    printItemList();
+    printf(0, "\n");
+    printf(0, "new a folder:\n");
+    newFolder("newfolder");
+    freeFileItemList();
+    list(".");
+    printItemList();
+    printf(0, "\n");
+    printf(0, "enter new folder:\n");
+    enterDir("newfolder");
+    freeFileItemList();
+    list(".");
+    printItemList();
+    printf(0, "\n");
+    printf(0, "new a file:\n");
+    newFile("newfile.txt");
+    freeFileItemList();
+    list(".");
+    printItemList();
 }
 
 
