@@ -195,8 +195,6 @@ main(int argc, char *argv[])
   static char buf[100];
   int fd;
 
-  printf(1, "hafhahhaha");
- 
   // Assumes three file descriptors open.
   while((fd = open("console", O_RDWR)) >= 0){
     if(fd >= 3){
