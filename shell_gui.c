@@ -5,6 +5,7 @@
 #include "drawingAPI.h"
 #include "message.h"
 #include "bitmap.h"
+#include "clickable.h"
 
 #define CHARWIDTH 7
 #define CHARHEIGHT 20
@@ -12,10 +13,20 @@
 #define LINES 20
 
 #define BUFSIZE 1024
+
+void h_closeWnd(Point p);
+void addWndEvent(ClickableManager *cm);
+
+
 char printer_buf[LINES][CHARS];
 int line_index = 0;
 int char_index = 0;
 int isFull = 0;
+int isRun = 1;
+
+
+ClickableManager cm;
+
 
 void
 init_printer()
@@ -81,7 +92,7 @@ main(int argc, char *argv[])
     int winid;
     struct Msg msg;
     struct Context context;
-    int isRun = 1;
+    Point p;
 
     winid = init_context(&context, (CHARS+2)*CHARWIDTH, (LINES+2)*CHARHEIGHT);
     fill_rect(context, 0, 0, context.width, context.height, 0x0);
@@ -91,6 +102,10 @@ main(int argc, char *argv[])
     int sh_pid;//, sh_wpid;
     char rfd[2], wfd[2];
     int gui2sh_fd[2], sh2gui_fd[2];
+
+    cm = initClickManager(context);
+    deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+    addWndEvent(&cm);
 
     printf(1, "init pipe: starting pipe\n");
     if(pipe(gui2sh_fd) != 0){
@@ -205,6 +220,9 @@ main(int argc, char *argv[])
                 updateWindow(winid, context.addr);
                 break;
             case MSG_LPRESS:
+                        p = initPoint(msg.concrete_msg.msg_mouse.x,
+                    msg.concrete_msg.msg_mouse.y);
+                executeHandler(cm.left_click, p);
                 break;
             case MSG_DOUBLECLICK:
                 break;
@@ -220,4 +238,27 @@ main(int argc, char *argv[])
     
     free_context(&context, winid);
     exit();
+}
+
+Handler wndEvents[] = { h_closeWnd};
+
+struct Icon wndRes[] = { { "close.bmp", 3, 3 } };
+
+void addWndEvent(ClickableManager *cm) {
+    int i;
+    int n = sizeof(wndEvents) / sizeof(Handler);
+    for (i = 0; i < n; i++) {
+        printf(0, "adding handler\n");
+        loadBitmap(&wndRes[i].pic, wndRes[i].name);
+        createClickable(cm,
+                initRect(wndRes[i].position_x, wndRes[i].position_y,
+                        wndRes[i].pic.width, wndRes[i].pic.height), MSG_LPRESS,
+                wndEvents[i]);
+        //printf(0, "left_click: %d", cm.left_click);
+    }
+}
+
+
+void h_closeWnd(Point p) {
+    isRun = 0;
 }
