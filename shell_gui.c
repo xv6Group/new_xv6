@@ -1,3 +1,17 @@
+/*
+ * FileName: shell_gui.c
+ * Author: Liu Tongtong
+ * Date: 2015.01.23
+ * Version: 2.0
+ *
+ * TODO: 
+ * 1. Add a cursor to the shell
+ * 2. Support the arrow keys
+ * 3. Support the text editor
+ * 4. Support page scrolling
+ *
+ */
+
 #include "types.h"
 #include "stat.h"
 #include "user.h"
@@ -58,10 +72,12 @@ init_printer()
 void
 clean_printer(struct Context context)
 {
-    fill_rect(context, 0, HEADERHEIGHT, context.width, context.height - HEADERHEIGHT - FOOTERHEIGHT, BACKGROUNDCOLOR);
+    fill_rect(context, 0, HEADERHEIGHT, context.width, 
+            context.height - HEADERHEIGHT - FOOTERHEIGHT, BACKGROUNDCOLOR);
 }
 
-// Load the read_buf(0..len-1) into the buffer and print strings in the buffer to the screen
+// Load the read_buf(0..len-1) into the buffer 
+// and print strings in the buffer to the screen
 void 
 string_printer(struct Context context, char* read_buf, int len)
 {
@@ -104,15 +120,19 @@ string_printer(struct Context context, char* read_buf, int len)
     
     clean_printer(context);
     if (!isFull) {
-        // The buffer isn't full. Just print 0..line_index lines to the screen.
+        // The buffer isn't full. 
+        // Just print 0..line_index lines to the screen.
         for (i = 0; i <= line_index; i++) {
-            puts_str(context, printer_buf[i], CHARCOLOR, CHARWIDTH, CHARHEIGHT * (i + 1) + 2);
+            puts_str(context, printer_buf[i], CHARCOLOR, 
+                    LEFTWIDTH, CHARHEIGHT * i + HEADERHEIGHT);
         }
     }
     else {
-        // The buffer is full. Print (line_index+1)..LINES, 0..line_index lines to the screen.
-        for (i = (line_index + 1) % LINES, j = 1; j <= LINES; i = (i + 1) % LINES, j++) {
-            puts_str(context, printer_buf[i], CHARCOLOR, CHARWIDTH, CHARHEIGHT * j + 2);
+        // The buffer is full. 
+        // Print (line_index+1)..LINES, 0..line_index lines to the screen.
+        for (i = (line_index + 1) % LINES, j = 0; j < LINES; i = (i + 1) % LINES, j++) {
+            puts_str(context, printer_buf[i], CHARCOLOR, 
+                    LEFTWIDTH, CHARHEIGHT * j + HEADERHEIGHT);
         }
     }
 }
@@ -128,8 +148,11 @@ struct windowinfo {
 void 
 init_window(struct windowinfo* winfo, char* title) 
 {
-    winfo->id = init_context(&(winfo->context), CHARS*CHARWIDTH + LEFTWIDTH + RIGHTWIDTH, LINES*CHARHEIGHT + HEADERHEIGHT + FOOTERHEIGHT);
-    fill_rect(winfo->context, 0, 0, (winfo->context).width, (winfo->context).height, BACKGROUNDCOLOR);
+    winfo->id = init_context(&(winfo->context), 
+            CHARS*CHARWIDTH + LEFTWIDTH + RIGHTWIDTH, 
+            LINES*CHARHEIGHT + HEADERHEIGHT + FOOTERHEIGHT);
+    fill_rect(winfo->context, 0, 0, 
+            (winfo->context).width, (winfo->context).height, BACKGROUNDCOLOR);
     draw_window(winfo->context, title);
 }
 
@@ -185,11 +208,11 @@ create_shell(int* p_pid, int* p_rfd, int* p_wfd)
 }
 
 // Initial the screen
+char init_string[] = "$ ";
 void
 init_screen(struct Context context, int rfd)
 {
     int total = 0, single = 0;
-    char init_string[] = "$ ";
     char tmp_buf[2];
 
     init_printer();
@@ -223,7 +246,8 @@ handle_keydown(struct Context context, char ch, int rfd, int wfd) {
     write_cmd[write_index++] = ch;
     string_printer(context, &ch, 1);
 
-    // If user input a '\n', the command will be sent to the sh and the printer will show the result.
+    // If user input a '\n', the command will be sent to the sh
+    // and the printer will show the result.
     if (ch == '\n') {
         if (write(wfd, write_cmd, strlen(write_cmd)) != strlen(write_cmd)) {
             printf(1, "gui pipe write: failed");
@@ -233,7 +257,10 @@ handle_keydown(struct Context context, char ch, int rfd, int wfd) {
             while (1) {
                 if ((n = read(rfd, read_buf, READBUFFERSIZE)) > 0) {
                     string_printer(context, read_buf, n);
-                    if (read_buf[n - 2] == '$' && read_buf[n - 1] == ' ') {
+                    // if the read_buf ends with init_string("$ "),
+                    // the result is over and stop reading.
+                    if (read_buf[n - 2] == init_string[0] 
+                            && read_buf[n - 1] == init_string[1]) {
                         break;
                     }
                 }
@@ -245,7 +272,8 @@ handle_keydown(struct Context context, char ch, int rfd, int wfd) {
     }
 
     char toolongcmdhint[] = "\nThe command is too long!\n";
-    // The command cannot be longer than write_len. Otherwise clean the write_cmd buffer.
+    // The command cannot be longer than write_len. 
+    // Otherwise show the hint and clean the write_cmd buffer.
     if (strlen(write_cmd) == COMMANDMAXLEN - 1) {
         // Print the hint
         string_printer(context, toolongcmdhint, strlen(toolongcmdhint));
@@ -255,20 +283,37 @@ handle_keydown(struct Context context, char ch, int rfd, int wfd) {
     }
 }
 
-void h_closeWnd(Point p);
-void addWndEvent(ClickableManager *cm);
+// Use for the close button
 ClickableManager cm;
 Point p;
+void h_closeWnd(Point p) {
+    isRun = 0;
+}
+
+Handler wndEvents[] = { h_closeWnd};
+struct Icon wndRes[] = { { "close.bmp", 3, 3 } };
+
+void addWndEvent(ClickableManager *cm) {
+    int i;
+    int n = sizeof(wndEvents) / sizeof(Handler);
+    for (i = 0; i < n; i++) {
+        printf(0, "adding handler\n");
+        loadBitmap(&wndRes[i].pic, wndRes[i].name);
+        createClickable(cm,
+                initRect(wndRes[i].position_x, wndRes[i].position_y,
+                        wndRes[i].pic.width, wndRes[i].pic.height), MSG_LPRESS,
+                wndEvents[i]);
+    }
+}
 
 int
 main(int argc, char *argv[])
 {
     struct windowinfo winfo;
-    init_window(&winfo, "I'm a SHELL");
-
     int sh_pid, rfd, wfd;
-    create_shell(&sh_pid, &rfd, &wfd);
 
+    init_window(&winfo, "I'm a SHELL");
+    create_shell(&sh_pid, &rfd, &wfd);
     init_screen(winfo.context, rfd);
 
     cm = initClickManager(winfo.context);
@@ -293,7 +338,11 @@ main(int argc, char *argv[])
                 updateWindow(winfo.id, winfo.context.addr);
                 break;
             case MSG_PARTIAL_UPDATE:
-                updatePartialWindow(winfo.id, winfo.context.addr, winfo.msg.concrete_msg.msg_partial_update.x1, winfo.msg.concrete_msg.msg_partial_update.y1, winfo.msg.concrete_msg.msg_partial_update.x2, winfo.msg.concrete_msg.msg_partial_update.y2);
+                updatePartialWindow(winfo.id, winfo.context.addr, 
+                        winfo.msg.concrete_msg.msg_partial_update.x1, 
+                        winfo.msg.concrete_msg.msg_partial_update.y1, 
+                        winfo.msg.concrete_msg.msg_partial_update.x2, 
+                        winfo.msg.concrete_msg.msg_partial_update.y2);
                 break;
             default:
                 break;
@@ -304,25 +353,3 @@ main(int argc, char *argv[])
     exit();
 }
 
-
-Handler wndEvents[] = { h_closeWnd};
-
-struct Icon wndRes[] = { { "close.bmp", 3, 3 } };
-
-void addWndEvent(ClickableManager *cm) {
-    int i;
-    int n = sizeof(wndEvents) / sizeof(Handler);
-    for (i = 0; i < n; i++) {
-        printf(0, "adding handler\n");
-        loadBitmap(&wndRes[i].pic, wndRes[i].name);
-        createClickable(cm,
-                initRect(wndRes[i].position_x, wndRes[i].position_y,
-                        wndRes[i].pic.width, wndRes[i].pic.height), MSG_LPRESS,
-                wndEvents[i]);
-        //printf(0, "left_click: %d", cm.left_click);
-    }
-}
-
-void h_closeWnd(Point p) {
-    isRun = 0;
-}

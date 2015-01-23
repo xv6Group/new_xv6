@@ -36,7 +36,7 @@ main(void)
   iinit();         // inode cache
   ideinit();       // disk
   soundinit();     // audio
-  vesamodeinit();
+  vesamodeinit();  // init VESA mode information
   msgqueueinit();
   msgtableinit();
   windowlistinit();
