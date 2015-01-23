@@ -225,7 +225,6 @@ main(int argc, char *argv[])
         close(1);
         dup(wfd);
         runcmd(parsecmd(buf));
-        printf(1, "\0");
     }
     wait();
     dup(wfd);
