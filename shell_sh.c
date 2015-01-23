@@ -213,7 +213,6 @@ main(int argc, char *argv[])
   
   // Read and run input commands.
   while(getcmd(buf, sizeof(buf)) >= 0){
-    printf(1, "%d\n", n);
     if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
       // Clumsy but will have to do for now.
       // Chdir has no effect on the parent if run in the child.
