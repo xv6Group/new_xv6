@@ -2,6 +2,7 @@
 #include "stat.h"
 #include "user.h"
 #include "bitmap.h"
+#include "clickable.h"
 #include "context.h"
 #include "drawingAPI.h"
 #include "message.h"
@@ -32,6 +33,7 @@ int line_index = 0;
 int char_index = 0;
 // If the screen is full
 int isFull = 0;
+int isRun = 1;
 
 // Define the max length of the command
 #define COMMANDMAXLEN 1024
@@ -253,6 +255,11 @@ handle_keydown(struct Context context, char ch, int rfd, int wfd) {
     }
 }
 
+void h_closeWnd(Point p);
+void addWndEvent(ClickableManager *cm);
+ClickableManager cm;
+Point p;
+
 int
 main(int argc, char *argv[])
 {
@@ -263,13 +270,22 @@ main(int argc, char *argv[])
     create_shell(&sh_pid, &rfd, &wfd);
 
     init_screen(winfo.context, rfd);
+
+    cm = initClickManager(winfo.context);
+    deleteClickable(&cm.left_click, initRect(0, 0, 800, 600));
+    addWndEvent(&cm);
     
     char write_cmd_ch;
-    while (1) {
+    while (isRun) {
         getMsg(&(winfo.msg));
         switch(winfo.msg.msg_type) {
             case MSG_UPDATE:
                 updateWindow(winfo.id, winfo.context.addr);
+                break;
+            case MSG_LPRESS:
+                p = initPoint(winfo.msg.concrete_msg.msg_mouse.x,
+                    winfo.msg.concrete_msg.msg_mouse.y);
+                executeHandler(cm.left_click, p);
                 break;
             case MSG_KEYDOWN:
                 write_cmd_ch = winfo.msg.concrete_msg.msg_key.key;
@@ -289,14 +305,24 @@ main(int argc, char *argv[])
 }
 
 
+Handler wndEvents[] = { h_closeWnd};
 
+struct Icon wndRes[] = { { "close.bmp", 3, 3 } };
 
+void addWndEvent(ClickableManager *cm) {
+    int i;
+    int n = sizeof(wndEvents) / sizeof(Handler);
+    for (i = 0; i < n; i++) {
+        printf(0, "adding handler\n");
+        loadBitmap(&wndRes[i].pic, wndRes[i].name);
+        createClickable(cm,
+                initRect(wndRes[i].position_x, wndRes[i].position_y,
+                        wndRes[i].pic.width, wndRes[i].pic.height), MSG_LPRESS,
+                wndEvents[i]);
+        //printf(0, "left_click: %d", cm.left_click);
+    }
+}
 
-
-
-
-
-
-
-
-
+void h_closeWnd(Point p) {
+    isRun = 0;
+}

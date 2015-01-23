@@ -265,7 +265,7 @@ draw_window(Context c, char *title)
   loadBitmap(&pic, "close.bmp");
   draw_picture(c, pic, 3, 3);
   puts_str(c, title, TITLE_COLOR, TITLE_OFFSET_X, TITLE_OFFSET_Y);
-
+  freepic(&pic);
 }
 
 void load_iconlist(ICON* iconlist, int len)
