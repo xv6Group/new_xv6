@@ -59,7 +59,7 @@ void finderinit(Point point)
 void playmusic(Point point)
 {
     int pid;
-    char* argv[] = { "qian.wav" };
+    char* argv[] = { "play", "qian.wav" };
     printf(0, "start playing music \n");
     pid = fork();
     if (pid < 0)
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     ClickableManager manager;
 
     winid = init_context(&context, 800, 600);
-//    fill_rect(context, 0, 0, context.width, context.height, 0xffff);
+    fill_rect(context, 0, 0, context.width, context.height, 0xffff);
 //    puts_str(context, "desktop: welcome", 0x0, 0, 0);
 
     PICNODE pic1, pic2, pic3/*, background*/;
